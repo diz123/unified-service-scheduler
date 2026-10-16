@@ -48,3 +48,12 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 - Out: No other changes.
 **Done when**: Show `pnpm install` and `pnpm verify` output, then delegate to the reviewer subagent and show its verdict.
 **Stop & ask if**: @types/node 24.x conflicts with any package's peer range.
+
+### 2026-10-17 02:25 — Phase 4 — Spec Record (frontend, seed, read-only API)
+
+/spec-record Current Phase line, Target Deliverables, Scope Decision, Out of Scope for MVP, API Contract -- 
+1. Current Phase: change to "4 — Implement".
+2. Target Deliverables [Resolved]: add (a) a booking frontend — one page to book an appointment; (b) a seed script that loads sample master data (dealerships, service bays, technicians with skills, service types, customers, vehicles) so the system can be run and tested.
+3. Scope Decision [Resolved]: backend first. Frontend starts only after the backend is complete and `pnpm verify` passes. If time runs out, the backend alone is the submission. Frontend stack will be decided in ADR-0002 at that point.
+4. Out of Scope for MVP: remove "frontend" from Non-goals. Add to Next phase: "available time-slot listing". Reason: BRIEF requirement 1 is a request at a desired time, and requirement 2 checks availability before confirming, so availability is checked on booking submission; a slot listing would not remove that check.
+5. API Contract [Resolved]: add three read-only operations used by the booking frontend: List Dealerships, List Service Types, List Vehicles of a Customer (by customerId). No create/update/delete for master data. Book Appointment stays as is; on rejection the frontend shows the reason and keeps the form for the customer to pick another time.

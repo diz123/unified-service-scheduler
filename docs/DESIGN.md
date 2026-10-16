@@ -1,7 +1,7 @@
 # DESIGN — The Unified Service Scheduler
 
 > [!IMPORTANT]
-> **Current Phase: 3 — Scaffold**
+> **Current Phase: 4 — Implement**
 
 ---
 
@@ -19,19 +19,26 @@
 2. **Real-Time Availability Check** — Before confirming, verify the availability of both a `ServiceBay` and a qualified `Technician` for the entire service duration.
 3. **Confirmed Appointment Record** — Upon success, create a persistent `Appointment` record associating the customer, vehicle, technician, and service bay.
 
-### Target Deliverables [Assumed]
+### Target Deliverables [Assumed + Resolved]
 
 Complete MVP system design and workflow, architectural decision record (ADR-0001), implementation planning documentation, and a backend MVP codebase covering the three core requirements above.
 
-### Scope Decision [Assumed]
+**[Resolved]** Also:
 
-Limit the initial release strictly to a backend-focused MVP covering the three core requirements. No unrequested feature expansion.
+- A booking frontend — one page to book an appointment.
+- A seed script that loads sample master data (dealerships, service bays, technicians with skills, service types, customers, vehicles) so the system can be run and tested.
+
+### Scope Decision [Resolved]
+
+Backend first. The frontend starts only after the backend is complete and `pnpm verify` passes. If time runs out, the backend alone is the submission. The frontend stack will be decided in ADR-0002 at that point. No unrequested feature expansion.
 
 ### Out of Scope for MVP
 
-**Next phase**: On-arrival technician adjustment of service time/duration; multi-service bookings; nearest-slot suggestions on rejection; customer cancellation and rescheduling; booking limits per vehicle (anti-spam); per-technician shifts, breaks, and holidays; closed-day and holiday handling; master-data CRUD endpoints; notifications.
+**Next phase**: On-arrival technician adjustment of service time/duration; multi-service bookings; nearest-slot suggestions on rejection; customer cancellation and rescheduling; booking limits per vehicle (anti-spam); per-technician shifts, breaks, and holidays; closed-day and holiday handling; master-data CRUD endpoints; notifications; available time-slot listing.
 
-**Non-goals**: Authentication and authorization (caller identity is known); customer and vehicle registration (assumed to exist); payment and pricing; frontend and mobile; reporting; external integrations (DMS).
+**Why time-slot listing is next phase**: Core Requirement 1 is a request at a desired time, and Core Requirement 2 checks availability before confirming, so availability is checked on booking submission; a slot listing would not remove that check.
+
+**Non-goals**: Authentication and authorization (caller identity is known); customer and vehicle registration (assumed to exist); payment and pricing; mobile; reporting; external integrations (DMS).
 
 ---
 
@@ -173,6 +180,18 @@ Each booking covers exactly one service type.
 | No available `ServiceBay` for the interval | 409 | **[Assumed]** |
 | No available qualified `Technician` for the interval | 409 | **[Assumed]** |
 | Vehicle already has a conflicting booking | 409 | **[Assumed]** |
+
+**Frontend handling** **[Resolved]**: On rejection, the booking frontend shows the reason and keeps the form so the customer can pick another time.
+
+### Read-Only Operations for the Booking Frontend **[Resolved]**
+
+Read-only operations used by the booking frontend. No create, update, or delete operations for master data.
+
+| Operation | Input | Returns |
+|---|---|---|
+| List Dealerships | — | Dealerships |
+| List Service Types | — | Service types |
+| List Vehicles of a Customer | `customerId` | The customer's vehicles |
 
 ---
 
