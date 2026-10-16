@@ -17,3 +17,11 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-16 15:56 — Phase 1 — Spec Record (I-11 reword)
 
 /spec-record Invariants -- I-11: overnightConsent is an optional boolean, default false. Only when the computed endTime falls on a later local date than startTime, a value other than true rejects the booking (400). Reword I-11 to match; do not change other invariants.
+
+### 2026-10-16 18:04 — Phase 2 — ADR
+
+/adr docs/drafts/stack-evaluation.md
+
+### 2026-10-16 17:21 — Phase 2 — Spec Record (Scale assumption)
+
+/spec-record Assumptions -- Replace assumption 5 (Scale) with: Scale [Assumed, not sourced]: ~3–5 million registered vehicles across ~500 dealerships in Vietnam (~20 ServiceBays, ~40 Technicians each). At 2–3 services per vehicle per year, that is ~16,000–41,000 bookings/day. Normal load ~1,000 concurrent users; seasonal or campaign peaks 5,000–10,000. Derived: booking writes average ~1.2/s and peak ~12/s; most concurrent users are reading availability, not writing. Contention is local to one dealership and time window, not global.

@@ -161,3 +161,7 @@ Available from Phase 3 (Scaffold) onward. Do NOT run them before `package.json` 
 - Callouts: only GitHub-supported types (`NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`).
 - No plugin-specific syntax (e.g., Dataview queries).
 - ADRs: `docs/adr/NNNN-kebab-title.md`, status one of `Proposed | Accepted | Superseded`, sections: Context / Options / Decision / Consequences.
+- Markdown formatting:
+  - Do NOT hard-wrap lines. One paragraph = one line.
+  - Leave a blank line before and after headings, lists, tables, and code blocks.
+  - Use LF line endings.
