@@ -18,6 +18,10 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 
 /spec-record Invariants -- I-11: overnightConsent is an optional boolean, default false. Only when the computed endTime falls on a later local date than startTime, a value other than true rejects the booking (400). Reword I-11 to match; do not change other invariants.
 
+### 2026-10-16 18:56 — Phase 3 — Scaffold
+
+/scaffold docs/drafts/scaffold-tree.md
+
 ### 2026-10-16 18:04 — Phase 2 — ADR
 
 /adr docs/drafts/stack-evaluation.md

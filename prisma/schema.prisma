@@ -1,0 +1,13 @@
+// Entities, indexes, and exclusion constraints are defined in Phase 4
+// when the Book Appointment use case is implemented (see docs/DESIGN.md).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/shared/infrastructure/database/generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

@@ -2,6 +2,9 @@
 node_modules/
 .pnpm-store/
 
+# Prisma generated client (regenerated via pnpm prisma generate)
+src/shared/infrastructure/database/generated/
+
 # Build & Compiled Output
 dist/
 build/
@@ -12,12 +15,6 @@ build/
 .env.local
 .env.*.local
 !.env.example
-
-# Local SQLite databases (for evaluation)
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
 
 # Test & Coverage
 coverage/

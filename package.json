@@ -1,0 +1,41 @@
+{
+  "name": "unified-service-scheduler",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "dev": "nest start --watch",
+    "start": "node dist/main",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --testPathPattern=tests/unit",
+    "test:integration": "jest --testPathPattern=tests/integration",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\""
+  },
+  "dependencies": {
+    "@nestjs/common": "*",
+    "@nestjs/core": "*",
+    "@nestjs/platform-express": "*",
+    "@prisma/adapter-pg": "*",
+    "@prisma/client": "*",
+    "class-transformer": "*",
+    "class-validator": "*",
+    "dotenv": "*",
+    "reflect-metadata": "*",
+    "rxjs": "*"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "*",
+    "@nestjs/schematics": "*",
+    "@nestjs/testing": "*",
+    "@types/jest": "*",
+    "@types/node": "*",
+    "@types/supertest": "*",
+    "eslint": "*",
+    "jest": "*",
+    "prisma": "*",
+    "supertest": "*",
+    "ts-jest": "*",
+    "typescript": "*",
+    "typescript-eslint": "*"
+  }
+}

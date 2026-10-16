@@ -11,5 +11,6 @@
 | 2026-10-16 17:21 | /spec-record — replace assumption 5 (Scale) | AI | Scale assumption expanded: ~3–5M vehicles, ~500 dealerships, ~1.2/s avg / ~12/s peak writes, contention local | docs/DESIGN.md |
 | 2026-10-16 18:04 | /adr stack-evaluation.md — 4 challenges answered | AI + Engineer | ADR-0001 written: NestJS + PostgreSQL + Prisma, Proposed | docs/adr/0001-tech-stack.md |
 | 2026-10-16 18:04 | Approve @prisma/adapter-pg | Engineer | Dependency approved; added at Phase 3 scaffold | docs/adr/0001-tech-stack.md |
+| 2026-10-16 18:56 | /scaffold docs/drafts/scaffold-tree.md | AI | Phase 3 complete: tree created, pnpm install clean, pnpm typecheck passes | src/, prisma/, tests/, package.json, tsconfig.json, CLAUDE.md §2+§6 |
 | 2026-10-16 18:10 | Fix broken Markdown formatting | AI | No hard-wrap, LF line endings via CLAUDE.md + .editorconfig + .gitattributes | CLAUDE.md §9, .editorconfig, .gitattributes |
 | 2026-10-16 18:12 | Unwrap hard-wrapped lines in docs | AI | Joined wrapped paragraphs/list items; content unchanged | docs/DESIGN.md, docs/adr/0001-tech-stack.md |

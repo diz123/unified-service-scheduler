@@ -1,7 +1,7 @@
 # DESIGN — The Unified Service Scheduler
 
 > [!IMPORTANT]
-> **Current Phase: 2 — Stack ADR**
+> **Current Phase: 3 — Scaffold**
 
 ---
 

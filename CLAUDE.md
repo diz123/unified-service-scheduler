@@ -8,15 +8,9 @@
 ## 2. Project Context & Stack
 - **Project**: Keyloop Technical Assessment — Scenario A: The Unified Service Scheduler.
 - **Role**: Act as a Senior Fullstack Engineer & Software Architect collaborating with the human Tech Lead.
-- **Stack Status**: ⏳ NOT DECIDED — pending ADR approval.
-  - Language (fixed): TypeScript (strict).
-  - Test framework (fixed): Jest.
-  - Framework candidates: NestJS | Fastify | Express.
-  - Database candidates: PostgreSQL | SQLite.
-  - ORM candidates: Prisma | alternatives allowed if justified in the ADR.
-- **Decision record**: `docs/adr/0001-tech-stack.md` (written after `docs/DESIGN.md` is approved).
-- Once ADR-0001 is `Accepted`, this section MUST be updated to reflect the chosen stack and link to the ADR.
-- **Architecture**: Layered / Clean Architecture (`domain/`, `application/`, `infrastructure/`, `presentation/`).
+- **Stack**: TypeScript (strict) · NestJS · PostgreSQL · Prisma ORM 7 · pnpm
+- **Decision record**: [ADR-0001](docs/adr/0001-tech-stack.md) — Accepted.
+- **Architecture**: Layered / Clean Architecture per module-first layout (`src/modules/<module>/` containing `domain/`, `application/`, `infrastructure/`, `presentation/`).
 
 ---
 
@@ -75,7 +69,6 @@ The ADR MUST state explicitly which criteria were traded off against each other.
 ---
 
 ## 6. Core Commands
-Available from Phase 3 (Scaffold) onward. Do NOT run them before `package.json` exists.
 - Dev Server: `pnpm dev`
 - Run Tests: `pnpm test`
 - Integration & Concurrency Tests: `pnpm test:integration`
