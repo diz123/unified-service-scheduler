@@ -35,6 +35,7 @@ A table with one row per finding: `Severity (Critical / Important / Minor) | Fil
 Then one line: `Verdict: PASS` (no Critical or Important findings) or `Verdict: FAIL`.
 
 Rules:
+- To check whether a file exists or is tracked, use `git status` / `git diff --stat` or Read the exact path; Glob can miss dotfiles such as `.env.example`.
 - Every finding needs evidence from a file you read or a command you ran. If you cannot verify a suspicion, list it under "Unverified concerns", not as a finding.
 - Do not report style preferences as findings.
 - If there are no findings, say so; do not invent issues.

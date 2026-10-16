@@ -23,7 +23,9 @@ process.stdin.on('end', () => {
     process.exit(2);
   }
   // Reject compound commands so an allowed prefix cannot smuggle another command.
-  if (/[;&|`$<>]/.test(command) || !ALLOWED.some((re) => re.test(command))) {
+  // Block flags that turn an allowed command into a file write.
+  const WRITE_FLAGS = /(^|\s)(--output(=|\s|$)|-o(\s|$)|--coverage|--ext-diff|--json\b|--outputFile)/;
+  if (/[;&|`$<>]/.test(command) || WRITE_FLAGS.test(command) || !ALLOWED.some((re) => re.test(command))) {
     process.stderr.write(`Reviewer is read-only. Command not allowed: ${command}\n`);
     process.exit(2);
   }

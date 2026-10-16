@@ -14,4 +14,4 @@ Focus, if given: $ARGUMENTS
 Rules:
 - Show the reviewer's findings table and verdict verbatim.
 - Do not fix any finding. Wait for me to decide which findings to act on.
-- Do not log this exchange in PROMPT_LOG unless I act on a finding.
+- Log this invocation as `CLAUDE.md` §8.7 requires (PROMPT_LOG).
