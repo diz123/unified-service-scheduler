@@ -34,3 +34,17 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-16 17:21 — Phase 2 — Spec Record (Scale assumption)
 
 /spec-record Assumptions -- Replace assumption 5 (Scale) with: Scale [Assumed, not sourced]: ~3–5 million registered vehicles across ~500 dealerships in Vietnam (~20 ServiceBays, ~40 Technicians each). At 2–3 services per vehicle per year, that is ~16,000–41,000 bookings/day. Normal load ~1,000 concurrent users; seasonal or campaign peaks 5,000–10,000. Derived: booking writes average ~1.2/s and peak ~12/s; most concurrent users are reading availability, not writing. Contention is local to one dealership and time window, not global.
+
+### 2026-10-16 22:05 — Phase 3 — Scaffold review fixes (M-5, M-6, M-7)
+
+**Phase**: 3 — Scaffold (review fixes)
+**Task**: Fix reviewer findings M-5, M-6, M-7.
+**Scope**:
+- In:
+  1. docker-compose.yml: replace postgres:17-alpine with the exact tag of the latest stable PostgreSQL major (18.x), verified on Docker Hub; update the ADR-0001 version table to match.
+  2. package.json: pin @types/node to the latest 24.x to match the Node 24 runtime.
+  3. package.json: add "packageManager": "pnpm@<installed version>" and "engines": { "node": ">=24 <25" }.
+  4. Keep "lint": "eslint ." but confirm with `pnpm eslint --debug` (or equivalent) that eslint.config.mjs only lints src/ and tests/; report the result.
+- Out: No other changes.
+**Done when**: Show `pnpm install` and `pnpm verify` output, then delegate to the reviewer subagent and show its verdict.
+**Stop & ask if**: @types/node 24.x conflicts with any package's peer range.

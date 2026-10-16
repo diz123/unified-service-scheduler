@@ -91,9 +91,9 @@ Prisma does not natively express `EXCLUDE USING gist` constraints in `schema.pri
 | Prisma ORM (`prisma`, `@prisma/client`) | 7.10.0 — `prisma-client` generator, `moduleFormat = "cjs"`; datasource URL provided via `prisma.config.ts` (not `schema.prisma`) |
 | `@prisma/adapter-pg` | 7.10.0 — `pg` and `@types/pg` come transitively; not direct dependencies |
 | `dotenv` | 18.0.8 — loaded via `import 'dotenv/config'` in `prisma.config.ts` |
-| PostgreSQL image | `postgres:17-alpine` — pinned in `docker-compose.yml` |
+| PostgreSQL image | `postgres:18.6-alpine3.24` — pinned in `docker-compose.yml` |
 | Jest / ts-jest | 30.5.2 / 29.4.15 |
-| `@types/jest`, `@types/node`, `@types/supertest` | 30.0.0 / 26.6.5 / 7.2.1 |
+| `@types/jest`, `@types/node`, `@types/supertest` | 30.0.0 / 24.19.2 / 7.2.1 |
 | supertest | 7.3.1 |
 | ESLint / typescript-eslint | 10.12.0 / 8.71.2 — enforces `@typescript-eslint/no-explicit-any: error` |
 
