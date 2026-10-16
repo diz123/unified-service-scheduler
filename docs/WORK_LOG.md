@@ -20,3 +20,4 @@
 | 2026-10-17 02:25 | /spec-record phase 4, frontend, seed, read-only API | Engineer | Phase 4; backend first, frontend + seed added; slot listing next phase; 3 read-only list ops | docs/DESIGN.md |
 | 2026-10-17 02:48 | /spec-record customer/vehicle created at booking | Engineer | Plate+phone identify customer; seed = master data only; Look Up Appointments added; plate/phone mismatch 409 | docs/DESIGN.md |
 | 2026-10-17 02:52 | Resolve Non-goals conflict; tag and Assumption 1 wording | Engineer | Drop "(caller identity is known)" and "customer login"; Vehicle [Assumed + Resolved]; Assumption 1 says plate entered | docs/DESIGN.md |
+| 2026-10-17 03:03 | /spec-record I-13, 404s, validation order | Engineer | I-13 start within working hours (400); unknown dealership/service type 404; 8-step validation order | docs/DESIGN.md |

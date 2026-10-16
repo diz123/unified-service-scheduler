@@ -149,6 +149,10 @@ A vehicle cannot have two bookings whose intervals overlap, even across differen
 
 Each booking covers exactly one service type.
 
+### I-13 — Start Within Working Hours **[Resolved]**
+
+A booking is rejected (400) when `startTime`, in the dealership's local time, is before `openTime` or at/after `closeTime`.
+
 ---
 
 ## API Contract
@@ -195,8 +199,24 @@ Each booking covers exactly one service type.
 | No available qualified `Technician` for the interval | 409 | **[Assumed]** |
 | Vehicle already has a conflicting booking | 409 | **[Assumed]** |
 | Existing `licensePlate` with a different `phone` | 409 | **[Resolved]** |
+| `startTime` outside working hours (I-13) | 400 | **[Resolved]** |
+| Unknown `dealershipId` | 404 | **[Resolved]** |
+| Unknown `serviceTypeId`, or service type not offered by the dealership | 404 | **[Resolved]** |
 
 **Frontend handling** **[Resolved]**: On rejection, the booking frontend shows the reason and keeps the form so the customer can pick another time.
+
+#### Validation order **[Resolved]**
+
+Checks run in this order and the first failure is returned:
+
+1. Input format (400).
+2. Dealership and service type exist and match (404).
+3. Time rules — past, outside working hours, overnight consent (400).
+4. Plate/phone match (409).
+5. A technician with the required skill exists (422).
+6. Vehicle has no overlapping booking (409).
+7. A free service bay (409).
+8. A free qualified technician (409).
 
 ### Read-Only Operations for the Booking Frontend **[Resolved]**
 
