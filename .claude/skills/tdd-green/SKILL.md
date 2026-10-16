@@ -32,6 +32,7 @@ If either is missing, stop and ask.
 
 ## Done when
 
-Show `pnpm test` and `pnpm typecheck` output, all passing.
+Run `pnpm verify` and show its full output; it must pass. If integration tests exist, also run `pnpm test:integration`.
+Then delegate to the `reviewer` subagent on the current diff and show its findings table and verdict verbatim. Do not fix any finding without my approval.
 Do not stage or commit; propose a commit message for me to run.
 Log this exchange as `CLAUDE.md` requires (WORK_LOG, PROMPT_LOG).

@@ -78,21 +78,24 @@ Prisma does not natively express `EXCLUDE USING gist` constraints in `schema.pri
 
 **Version policy**: Use the latest stable release of every dependency as of Phase 3 scaffold, verified against official docs. No pre-releases; no floating `latest` image tags. Exact versions are pinned in `pnpm-lock.yaml` and Docker image tags and recorded in this ADR when Phase 3 starts.
 
-**Current expectation** (to be confirmed at Phase 3):
+**Pinned versions** (Phase 3 scaffold — 2026-10-16):
 
-| Dependency / Tool | Expected version / Role |
+| Dependency / Tool | Pinned version |
 |---|---|
-| Package manager | `pnpm` — latest stable |
-| Node.js | current LTS |
-| TypeScript | latest stable — `strict: true` |
-| NestJS (`@nestjs/core`, `@nestjs/common`, `@nestjs/platform-express`, `@nestjs/cli`) | latest stable |
-| Validation (`class-validator`, `class-transformer`) | latest stable — used only in `presentation/dtos/` via NestJS `ValidationPipe` |
-| Prisma ORM (`prisma`, `@prisma/client`) | 7.x — default `prisma-client` generator, `moduleFormat = "cjs"` to match NestJS CommonJS build |
-| `@prisma/adapter-pg` | latest stable — required by Prisma 7 driver adapter model (approved). Whether `pg` must also be a direct dependency is verified against Prisma docs at Phase 3 |
-| `dotenv` | latest stable — loads `DATABASE_URL` for Prisma 7 config, as in the NestJS Prisma recipe |
-| PostgreSQL image | latest stable major — exact tag pinned in `docker-compose.yml` (replacing `postgres:16-alpine` from evaluation draft) |
-| Test stack (`jest`, `ts-jest`, `@types/jest`, `@nestjs/testing`, `supertest`, `@types/supertest`) | latest stable |
-| Linter (`eslint`, `typescript-eslint`) | latest stable — enforces `@typescript-eslint/no-explicit-any: error` |
+| Package manager | pnpm 11.13.1 |
+| Node.js | 24.18.0 (current LTS) |
+| TypeScript | 6.0.3 — pinned to `<6.1.0` due to `typescript-eslint@8.71.2` peer constraint (`>=4.8.4 <6.1.0`); `strict: true` |
+| NestJS (`@nestjs/core`, `@nestjs/common`, `@nestjs/platform-express`, `@nestjs/testing`) | 12.1.3 |
+| NestJS CLI / Schematics (`@nestjs/cli`, `@nestjs/schematics`) | 12.0.8 / 12.0.7 |
+| Validation (`class-validator`, `class-transformer`) | 0.15.1 / 0.5.1 — used only in `presentation/dtos/` via NestJS `ValidationPipe` |
+| Prisma ORM (`prisma`, `@prisma/client`) | 7.10.0 — `prisma-client` generator, `moduleFormat = "cjs"`; datasource URL provided via `prisma.config.ts` (not `schema.prisma`) |
+| `@prisma/adapter-pg` | 7.10.0 — `pg` and `@types/pg` come transitively; not direct dependencies |
+| `dotenv` | 18.0.8 — loaded via `import 'dotenv/config'` in `prisma.config.ts` |
+| PostgreSQL image | `postgres:17-alpine` — pinned in `docker-compose.yml` |
+| Jest / ts-jest | 30.5.2 / 29.4.15 |
+| `@types/jest`, `@types/node`, `@types/supertest` | 30.0.0 / 26.6.5 / 7.2.1 |
+| supertest | 7.3.1 |
+| ESLint / typescript-eslint | 10.12.0 / 8.71.2 — enforces `@typescript-eslint/no-explicit-any: error` |
 
 ---
 

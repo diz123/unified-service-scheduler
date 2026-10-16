@@ -32,5 +32,5 @@ If any part is missing, stop and ask. Do not invent test cases I did not list; s
 
 ## Done when
 
-Show `pnpm test` output with the new tests failing for the expected reason: a failed assertion or the stub's `Not implemented` error — not a syntax, compile, or import error.
+Show `pnpm test` output with the new tests failing for the expected reason: a failed assertion or the stub's `Not implemented` error — not a syntax, compile, or import error. `pnpm typecheck` and `pnpm lint` must pass (only the new tests may fail).
 Log this exchange as `CLAUDE.md` requires (WORK_LOG, PROMPT_LOG).

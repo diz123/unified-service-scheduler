@@ -14,3 +14,4 @@
 | 2026-10-16 18:56 | /scaffold docs/drafts/scaffold-tree.md | AI | Phase 3 complete: tree created, pnpm install clean, pnpm typecheck passes | src/, prisma/, tests/, package.json, tsconfig.json, CLAUDE.md §2+§6 |
 | 2026-10-16 18:10 | Fix broken Markdown formatting | AI | No hard-wrap, LF line endings via CLAUDE.md + .editorconfig + .gitattributes | CLAUDE.md §9, .editorconfig, .gitattributes |
 | 2026-10-16 18:12 | Unwrap hard-wrapped lines in docs | AI | Joined wrapped paragraphs/list items; content unchanged | docs/DESIGN.md, docs/adr/0001-tech-stack.md |
+| 2026-10-16 19:23 | Phase 3 fix: pin versions, fix jest/prisma/tsconfig, add docker-compose | AI | All 5 checks pass; TS pinned 6.0.3; ADR versions table updated | package.json, tsconfig.json, prisma/schema.prisma, prisma.config.ts, docker-compose.yml, docs/adr/0001-tech-stack.md |

@@ -14,5 +14,6 @@
     "outDir": "./dist",
     "skipLibCheck": true,
     "incremental": true
-  }
+  },
+  "include": ["src/**/*", "tests/**/*"]
 }

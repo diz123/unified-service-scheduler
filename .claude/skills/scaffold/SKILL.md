@@ -36,6 +36,7 @@ If the input is a file path, read that file and treat its content as the tree.
 
 ## Done when
 
-Show the tree output matching the agreed structure, `pnpm typecheck` passing on the empty project, and `git diff CLAUDE.md`.
+Show the tree output matching the agreed structure and `git diff CLAUDE.md`. Run `pnpm verify` and show its full output; it must pass.
+Then delegate to the `reviewer` subagent on the current diff and show its findings table and verdict verbatim. Do not fix any finding without my approval.
 Do not stage or commit; propose a commit message for me to run.
 Log this exchange as `CLAUDE.md` requires (WORK_LOG, PROMPT_LOG).

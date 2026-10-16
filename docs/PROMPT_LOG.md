@@ -26,6 +26,11 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 
 /adr docs/drafts/stack-evaluation.md
 
+### 2026-10-16 19:23 — Phase 3 — Scaffold fix
+
+**Phase**: 3 — Scaffold (fix)
+**Task**: Fix the scaffold so typecheck, lint, test and prisma validate all pass. **Scope**: 1. Replace every "*" in package.json with the exact installed version. Pin typescript to the latest 6.0.x (typescript-eslint 8.71.2 supports TS >=4.8.4 <6.1.0). 2. Jest 30: change --testPathPattern to --testPathPatterns in "test" and "test:integration"; add --passWithNoTests to both. 3. Prisma 7: remove url from the datasource in prisma/schema.prisma; add prisma.config.ts at the repo root using defineConfig from 'prisma/config', reading DATABASE_URL via dotenv. 4. Add docker-compose.yml with PostgreSQL pinned to the latest stable major (exact tag, no "latest") and a healthcheck. 5. tsconfig.json: add "include": ["src/**/*", "tests/**/*"]. 6. Record the exact installed versions in the ADR-0001 Decision table (replace "latest stable"). Note that pg and @types/pg come transitively via @prisma/adapter-pg and are not direct dependencies. Out: Do not add pg or @types/pg as direct dependencies. No business logic. Do not change any other file. References: docs/adr/0001-tech-stack.md, CLAUDE.md §6, §8.2. Done when: Show the output of pnpm typecheck, pnpm lint, pnpm test, pnpm test:integration and pnpm prisma validate, all passing. Stop & ask if: Any pinned version conflicts with another package's peer range; or the empty state/ folder is needed by a tool (otherwise list it for me to delete).
+
 ### 2026-10-16 17:21 — Phase 2 — Spec Record (Scale assumption)
 
 /spec-record Assumptions -- Replace assumption 5 (Scale) with: Scale [Assumed, not sourced]: ~3–5 million registered vehicles across ~500 dealerships in Vietnam (~20 ServiceBays, ~40 Technicians each). At 2–3 services per vehicle per year, that is ~16,000–41,000 bookings/day. Normal load ~1,000 concurrent users; seasonal or campaign peaks 5,000–10,000. Derived: booking writes average ~1.2/s and peak ~12/s; most concurrent users are reading availability, not writing. Contention is local to one dealership and time window, not global.
