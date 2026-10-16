@@ -1,0 +1,5 @@
+**Scale & Operating Window**: Supports ~500 dealerships in Vietnam with ~1,000 concurrent users. Each dealership has ~20 `ServiceBays` and ~40 `Technicians`. Standard operating hours and default shifts are 08:00–17:00 (ICT).
+
+**Resource Capacity Constraints**: 1 `ServiceBay` can serve only 1 vehicle at a time (supporting only one `Technician` working on that vehicle). 1 `Technician` can serve only 1 vehicle at a time. Each service has an estimated duration. The end time is computed from the desired start time by counting working hours only (e.g., a 12-hour service starting 08:00 ends at 11:00 the next day; a 2-hour service starting 16:00 ends at 09:00 the next day). Any booking may continue into the next day, subject to the customer's overnight consent; the bay and technician stay reserved for the whole interval.
+
+**Skills & Service Types**: Dealerships define their own `ServiceTypes`. Each `Technician` has specific skills (e.g., Maintenance, Brakes & Suspension, Electrical, Overhaul, EV Charging) mapped to the `ServiceTypes` they are qualified to perform. Each `ServiceType` requires exactly one skill.

@@ -137,12 +137,11 @@ Available from Phase 3 (Scaffold) onward. Do NOT run them before `package.json` 
      | 2026-10-15 13:51 | Lighter work log format | AI          | One-row table per exchange | CLAUDE.md §8.6 |
 
 7. **Prompt Log** (`docs/PROMPT_LOG.md`) — applies from Phase 1 onward:
-   - For every task prompt from the human engineer (prompts using the Phase/Task/Scope format), append it VERBATIM under a heading:
+   - For every task prompt from the human engineer (a skill invocation such as `/spec-review ..` including its full arguments, or a prompt using the Phase/Task/Scope format), append it VERBATIM under a heading:
      `### YYYY-MM-DD HH:MM — Phase N — <short task title>` (timestamp via `date`).
    - Do not summarize, fix, translate, or reformat the prompt.
    - Skip short conversational replies (e.g., "ok", "yes, go ahead").
    - Never edit or delete past entries.
----
 
 8. **No Fabrication & No Over-Engineering**:
    - NEVER invent APIs, package names, versions, CLI flags, config options, file contents, or command output.
