@@ -26,7 +26,7 @@ Complete MVP system design and workflow, architectural decision record (ADR-0001
 **[Resolved]** Also:
 
 - A booking frontend — one page to book an appointment.
-- A seed script that loads sample master data (dealerships, service bays, technicians with skills, service types, customers, vehicles) so the system can be run and tested.
+- A seed script that loads sample master data (dealerships, service bays, technicians with skills, and service types only) so the system can be run and tested. Customers and vehicles are created through booking.
 
 ### Scope Decision [Resolved]
 
@@ -38,7 +38,7 @@ Backend first. The frontend starts only after the backend is complete and `pnpm 
 
 **Why time-slot listing is next phase**: Core Requirement 1 is a request at a desired time, and Core Requirement 2 checks availability before confirming, so availability is checked on booking submission; a slot listing would not remove that check.
 
-**Non-goals**: Authentication and authorization (caller identity is known); customer and vehicle registration (assumed to exist); payment and pricing; mobile; reporting; external integrations (DMS).
+**Non-goals**: Authentication and authorization; separate customer and vehicle registration (customers and vehicles are created at booking); payment and pricing; mobile; reporting; external integrations (DMS).
 
 ---
 
@@ -46,12 +46,15 @@ Backend first. The frontend starts only after the backend is complete and `pnpm 
 
 ### Entities
 
-**Customer** **[Assumed]**
-- Assumed to exist. No registration endpoint in MVP scope.
+**Customer** **[Resolved]**
+- `name`, `phone`.
+- Created at booking. No separate registration endpoint in MVP scope.
 
-**Vehicle** **[Assumed]**
+**Vehicle** **[Assumed + Resolved]**
 - Belongs to one `Customer`.
-- Assumed to exist. No registration endpoint in MVP scope.
+- `licensePlate`: unique, compared after normalization (uppercase; spaces, `-` and `.` removed). **[Resolved]**
+- Optional `make` and `model`. **[Resolved]**
+- Created at booking. No separate registration endpoint in MVP scope. **[Resolved]**
 
 **Dealership** **[Given + Resolved]**
 - `openTime`, `closeTime` (local time, e.g. `08:00`), `timezone` (IANA timezone identifier).
@@ -157,16 +160,27 @@ Each booking covers exactly one service type.
 
 **Intent**: Request a confirmed appointment for a vehicle at a dealership.
 
+**Booking flow** **[Resolved]**: personal info (name, phone) → vehicle info (license plate, optional make/model) → dealership → service type → desired start time.
+
 **Request inputs**:
 
 | Field | Type | Tag | Notes |
 |---|---|---|---|
-| `customerId` | identifier | **[Assumed]** | Identifies the requesting customer; assumed to exist |
-| `vehicleId` | identifier | **[Given]** | The vehicle to be serviced |
+| `name` | string | **[Resolved]** | Customer name |
+| `phone` | string | **[Resolved]** | Customer phone |
+| `licensePlate` | string | **[Resolved]** | The vehicle to be serviced |
+| `make` | string | **[Resolved]** | Optional |
+| `model` | string | **[Resolved]** | Optional |
 | `dealershipId` | identifier | **[Given]** | Target dealership |
 | `serviceTypeId` | identifier | **[Given]** | Requested service |
 | `startTime` | ISO 8601 UTC | **[Given]** | Desired start time |
 | `overnightConsent` | boolean | **[Resolved]** | Optional, default `false`. Checked only when `endTime` falls on a later local date than `startTime`; booking rejected (400) if `false` in that case |
+
+**Customer and vehicle resolution** **[Resolved]**:
+
+- New plate → create the customer and the vehicle.
+- Existing plate with a matching phone → reuse the vehicle and its owner; the entered name does not overwrite the stored name.
+- Existing plate with a different phone → reject (409).
 
 **Success response** **[Assumed]**: The created `Appointment` including `id`, `startTime`, `endTime`, `status`, assigned `ServiceBay`, and assigned `Technician`.
 
@@ -180,6 +194,7 @@ Each booking covers exactly one service type.
 | No available `ServiceBay` for the interval | 409 | **[Assumed]** |
 | No available qualified `Technician` for the interval | 409 | **[Assumed]** |
 | Vehicle already has a conflicting booking | 409 | **[Assumed]** |
+| Existing `licensePlate` with a different `phone` | 409 | **[Resolved]** |
 
 **Frontend handling** **[Resolved]**: On rejection, the booking frontend shows the reason and keeps the form so the customer can pick another time.
 
@@ -190,14 +205,16 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 | Operation | Input | Returns |
 |---|---|---|
 | List Dealerships | — | Dealerships |
-| List Service Types | — | Service types |
-| List Vehicles of a Customer | `customerId` | The customer's vehicles |
+| List Service Types | `dealershipId` | Service types |
+| Look Up Appointments | `licensePlate`, `phone` | That vehicle's appointments: start/end time, dealership, service type, status. No name or phone. |
+
+**Look Up Appointments** is supplementary, beyond the three Core Requirements. A plate/phone mismatch returns the same "not found" result as an unknown plate.
 
 ---
 
 ## Assumptions
 
-1. **Auto-allocation** **[Assumed]** — Customers select vehicle, dealership, `ServiceType`, and desired time only. The system assigns `ServiceBay` and `Technician`; customers cannot specify them.
+1. **Auto-allocation** **[Assumed]** — Customers enter their vehicle (license plate) and select dealership, `ServiceType`, and desired time only. The system assigns `ServiceBay` and `Technician`; customers cannot specify them.
 
 2. **Technician allocation order** **[Resolved]** — Prefer the technician with the fewest confirmed appointments whose `[startTime, endTime)` interval overlaps the requested calendar date (in dealership local time; each appointment counts as 1). Ties broken by fixed order only.
 
@@ -215,7 +232,7 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 
 9. **Overnight consent field** **[Resolved]** — `overnightConsent` is an optional boolean, default `false`. It is evaluated only when `endTime` falls on a later local date than `startTime`; the booking is rejected (400) when it is `false` in that case.
 
-10. **Caller identity known** **[Assumed]** — `customerId` is supplied by the caller. No authentication is in scope.
+10. **Customer identification** **[Resolved]** — No login. A customer is identified by the vehicle's license plate. MVP assumes one plate maps to one phone number; a booking with a known plate and a different phone is rejected.
 
 ---
 
