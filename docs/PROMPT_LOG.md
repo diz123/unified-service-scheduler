@@ -134,3 +134,15 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 10:21 — Phase 4 — TDD Refactor Round 2 (exception names and messages)
 
 /tdd-refactor src/modules/scheduling/domain/scheduling.exceptions.ts -- give BayUnavailable, TechnicianUnavailable, PlatePhoneMismatch, ResourceNotFound, SkillMismatch and VehicleUnavailable exceptions a name and default message like the time-rule exceptions. No behavior or test changes.
+
+### 2026-10-17 10:39 — Phase 4 — TDD Round 3a (schema & constraints)
+
+/tdd-round Round 3a -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 10:46 — Phase 4 — TDD Round 3a (schema & constraints, retry)
+
+/tdd-round Round 3a -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 10:53 — Phase 4 — TDD Round 3a (schema & constraints, retry 2)
+
+/tdd-round Round 3a -- docs/drafts/book-appointment-test-cases.md

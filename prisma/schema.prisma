@@ -1,5 +1,5 @@
-// Entities, indexes, and exclusion constraints are defined in Phase 4
-// when the Book Appointment use case is implemented (see docs/DESIGN.md).
+// Exclusion constraints (ADR-0001 Layer 2), the btree_gist extension and the Dealership
+// working-hours CHECK are not expressible here; they live in the migration SQL.
 
 generator client {
   provider     = "prisma-client"
@@ -9,4 +9,97 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum AppointmentStatus {
+  Confirmed
+  Cancelled
+}
+
+model Dealership {
+  id           String        @id @default(uuid())
+  name         String
+  /// Local time `HH:mm`.
+  openTime     String
+  /// Local time `HH:mm`.
+  closeTime    String
+  /// IANA timezone identifier.
+  timezone     String
+  serviceTypes ServiceType[]
+  serviceBays  ServiceBay[]
+  technicians  Technician[]
+  appointments Appointment[]
+}
+
+model ServiceType {
+  id              String        @id @default(uuid())
+  dealershipId    String
+  dealership      Dealership    @relation(fields: [dealershipId], references: [id])
+  name            String
+  requiredSkill   String
+  durationMinutes Int
+  appointments    Appointment[]
+
+  @@index([dealershipId])
+}
+
+model ServiceBay {
+  id           String        @id @default(uuid())
+  dealershipId String
+  dealership   Dealership    @relation(fields: [dealershipId], references: [id])
+  name         String
+  appointments Appointment[]
+
+  @@index([dealershipId])
+}
+
+model Technician {
+  id           String        @id @default(uuid())
+  dealershipId String
+  dealership   Dealership    @relation(fields: [dealershipId], references: [id])
+  name         String
+  skills       String[]
+  appointments Appointment[]
+
+  @@index([dealershipId])
+}
+
+model Customer {
+  id           String        @id @default(uuid())
+  name         String
+  phone        String
+  vehicles     Vehicle[]
+  appointments Appointment[]
+}
+
+model Vehicle {
+  id           String        @id @default(uuid())
+  customerId   String
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  /// Normalized: uppercase; spaces, `-` and `.` removed.
+  licensePlate String        @unique
+  make         String?
+  model        String?
+  appointments Appointment[]
+}
+
+model Appointment {
+  id            String            @id @default(uuid())
+  customerId    String
+  customer      Customer          @relation(fields: [customerId], references: [id])
+  vehicleId     String
+  vehicle       Vehicle           @relation(fields: [vehicleId], references: [id])
+  dealershipId  String
+  dealership    Dealership        @relation(fields: [dealershipId], references: [id])
+  serviceTypeId String
+  serviceType   ServiceType       @relation(fields: [serviceTypeId], references: [id])
+  serviceBayId  String
+  serviceBay    ServiceBay        @relation(fields: [serviceBayId], references: [id])
+  technicianId  String
+  technician    Technician        @relation(fields: [technicianId], references: [id])
+  startTime     DateTime          @db.Timestamptz(3)
+  endTime       DateTime          @db.Timestamptz(3)
+  status        AppointmentStatus
+
+  @@index([dealershipId, startTime])
 }

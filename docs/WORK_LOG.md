@@ -37,3 +37,8 @@
 | 2026-10-17 09:56 | Split T2.22 into T2.22a–d | Engineer | 4 separate it() blocks; a–c red, d passes | tests/unit/scheduling/book-appointment.use-case.spec.ts |
 | 2026-10-17 10:05 | /tdd-green Round 2 rejections, validation order, time rules | AI | Checks in recorded order; 404 incl. service type of other dealership; skill 422 before vehicle overlap; 44/44 green | src/modules/scheduling/application/book-appointment.use-case.ts |
 | 2026-10-17 10:21 | /tdd-refactor Round 2 exception names and messages | AI | 6 exceptions get name + default message; 44/44 green | src/modules/scheduling/domain/scheduling.exceptions.ts |
+| 2026-10-17 10:33 | Start local DB for integration tests | AI | Postgres 18.6 up and healthy; .env not created (cp denied) | none (docker container only) |
+| 2026-10-17 10:39 | /tdd-round Round 3a schema & constraints | AI | Stopped before Red: localhost:5432 answered by WSL Postgres (wslrelay), not Docker | none (prisma generate only, gitignored) |
+| 2026-10-17 10:43 | Port conflict fix (option 1) | Engineer | Container on host port 5433; .env.example and .env edited by engineer (AI access to .env* denied) | docker-compose.yml |
+| 2026-10-17 10:47 | Port 5433 also taken (native postgres.exe) | AI | Container moved to host port 55432 (verified free); engineer updates .env and .env.example | docker-compose.yml |
+| 2026-10-17 11:05 | /tdd-round Round 3a schema & constraints | AI | Prisma models + init migration with btree_gist, 3 exclusion constraints, hours CHECK; gate FAIL→PASS; 8/8 integration green; reviewer PASS | prisma/schema.prisma, prisma/migrations/20261017040103_init/, tests/integration/** |
