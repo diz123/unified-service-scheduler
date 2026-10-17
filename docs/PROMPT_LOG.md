@@ -371,3 +371,23 @@ Then run pnpm test:integration and pnpm verify. Re-review once; do not stop for 
 ### 2026-10-17 21:17 — Phase 4 — TDD Round F2 error mapping and request payloads
 
 /tdd-round Round F2 -- docs/drafts/frontend-test-cases.md
+
+### 2026-10-17 21:59 — Phase 4 — Round F3 booking form
+
+Phase: 4 — Implement (frontend UI, no unit tests per ADR-0002 trade-off 2)
+Task: Round F3 — booking form on the single page.
+
+Scope:
+- Allowed files: frontend/lib/api.ts (new, thin fetch client per FD-5, uses parseErrorBody), frontend/app/page.tsx, frontend/app/booking-form.tsx (new client component), frontend/app/globals.css. No new packages, no backend change.
+- Calls go through the rewrite: /api/dealerships, /api/dealerships/:id/service-types, POST /api/appointments.
+- Field order (agreed flow): name, phone → licensePlate, make, model (optional) → dealership (show open–close hours) → service type (reloads and resets when the dealership changes) → date and time (dealership local time).
+- Use buildBookingPayload, toUtcIso, toUserMessage and formatLocal from frontend/lib. No client-side business validation; only required attributes and maxLength from DESIGN Input lengths.
+- Submit button disabled while a request is in flight.
+- Success (201): show start and end in dealership local time (formatLocal), the status, and a "Book another" button.
+- Rejection: show the message and any details from toUserMessage, keep every form value (DESIGN Frontend handling).
+- OVERNIGHT_CONSENT_REQUIRED: show a checkbox "I agree to leave my vehicle overnight"; the customer ticks it and submits again. The checkbox is not shown before that error.
+- Lookup is out of scope (next round).
+
+Done when: pnpm verify passes; the reviewer subagent has reviewed the diff (show its table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; one commit proposal. Never stage or commit.
+
+Stop & ask if: a behavior is not in DESIGN or this prompt; a file outside the allowed list is needed; a package is needed.
