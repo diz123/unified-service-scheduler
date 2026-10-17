@@ -130,3 +130,7 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 10:05 — Phase 4 — TDD Green Round 2 (rejections, validation order, time rules)
 
 /tdd-green Rejections, validation order and time rules (Round 2, T2.16–T2.22) -- allowed: src/modules/scheduling/application/book-appointment.use-case.ts. Follow DESIGN.md Validation order: 404 → past → working hours → overnight consent → plate/phone → skill → vehicle overlap → bay → technician. Check working hours before computeServiceWindow; check consent right after it.
+
+### 2026-10-17 10:21 — Phase 4 — TDD Refactor Round 2 (exception names and messages)
+
+/tdd-refactor src/modules/scheduling/domain/scheduling.exceptions.ts -- give BayUnavailable, TechnicianUnavailable, PlatePhoneMismatch, ResourceNotFound, SkillMismatch and VehicleUnavailable exceptions a name and default message like the time-rule exceptions. No behavior or test changes.

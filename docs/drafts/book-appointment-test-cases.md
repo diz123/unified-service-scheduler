@@ -77,28 +77,54 @@ Note: the in-memory fakes re-implement overlap and lookup logic, so boundary cas
 
 Note: the order inside step 3 (past, working hours, overnight consent) all returns 400, so it is not tested here.
 
-## Round 3 — Integration: real PostgreSQL (+ HTTP via supertest)
+## Round 3 — Integration: real PostgreSQL (use case + Prisma adapter, no HTTP)
 
-File: `tests/integration/scheduling/book-appointment.integration.spec.ts` — run with `pnpm test:integration`.
+Decision: Round 3 calls `BookAppointmentUseCase` with the real Prisma adapter. HTTP status mapping is tested in Round 4b. "Succeeds" means a `Confirmed` appointment is returned; "rejected" means the named domain exception is thrown; "no unexpected error" means every rejection is a domain exception — no raw Prisma/PostgreSQL error (e.g. 23P01, 23505, 40P01) and no timeout.
 
-Preconditions: Prisma pool size ≥ N (ADR-0001). Every concurrent request uses a distinct `licensePlate` unless the case says otherwise; a shared vehicle would hit the plate lock / I-10 and mask the bay/technician race.
+Shared preconditions for 3a–3c:
 
-- T3.1 [I-2] Back-to-back at 10:00 through the real query and constraint → 201.
-- T3.2 [I-2] A seeded overlapping `Cancelled` appointment does not block → 201.
-- T3.3 [I-10] Same plate and phone, overlapping booking at another dealership, through the real query → 409.
+- `docker compose up -d` is healthy and `.env` holds `DATABASE_URL` (copy from `.env.example`).
+- Migrations are applied before the run. Tests truncate all tables before each test, so do not point `DATABASE_URL` at data you need.
+- Concurrency tests: Prisma pool size ≥ N (ADR-0001). Every concurrent request uses a distinct `licensePlate` unless the case says otherwise; a shared plate would hit the plate lock / I-10 and mask the bay/technician race.
+
+## Round 3a — Schema & constraints
+
+File: `tests/integration/scheduling/schema-constraints.integration.spec.ts` — run with `pnpm test:integration`.
+
+Allowed: `prisma/schema.prisma`, `prisma/migrations/**`, `tests/integration/support/**`.
+
+- T3.15 [ADR Layer 2] Raw SQL bypassing the app: overlapping `Confirmed` rows on the same bay / technician / vehicle → SQLSTATE 23P01 with constraint `appointment_bay_no_overlap` / `appointment_technician_no_overlap` / `appointment_vehicle_no_overlap` (one test each); touching `[)` intervals → accepted; overlap with an existing `Cancelled` row → accepted.
+- T3.17 [A-4] Raw SQL: inserting a Dealership with `openTime >= closeTime` is rejected by a CHECK constraint.
+- T3.18 [Vehicle.licensePlate] Raw SQL: inserting two vehicles with the same normalized `licensePlate` is rejected by a unique constraint.
+
+## Round 3b — Unit-of-Work adapter
+
+File: `tests/integration/scheduling/booking-unit-of-work.integration.spec.ts` — run with `pnpm test:integration`.
+
+Allowed: `src/modules/scheduling/infrastructure/**`, `src/shared/infrastructure/database/**`, `tests/integration/support/**`.
+
+- T3.1 [I-2] Back-to-back at 10:00 through the real query and constraint → succeeds.
+- T3.2 [I-2] A seeded overlapping `Cancelled` appointment does not block → succeeds.
+- T3.3 [I-10] Same plate and phone, overlapping booking at another dealership, through the real query → VehicleUnavailableException.
 - T3.4 [Resolution] Plate normalization through the real lookup and unique constraint: stored `51A12345`, request `51a-123.45` → reuses the vehicle (no second Vehicle row).
-- T3.5 [I-3] Last-bay race: N = 10 parallel requests, same slot, 1 free bay, technicians plentiful → exactly 1 × 201, N−1 × 409, no 500.
-- T3.6 [I-3] Last-technician race: 1 free qualified technician, bays plentiful → exactly 1 × 201, N−1 × 409, no 500.
-- T3.7 [I-3] Partial-overlap race: N requests with staggered starts that all pairwise overlap the single free bay (e.g. 09:00, 09:30, 10:00 with 120 min) → exactly 1 × 201.
-- T3.8 [ADR Layer 1] No false contention: 2 parallel requests, same dealership, 2 free bays + 2 free qualified technicians → both 201, with distinct bays and distinct technicians. This is the only case that fails when Layer 1 is broken (Layer 2 would turn the second request into 409).
-- T3.9 [I-10] Same existing vehicle, same dealership: N parallel requests → exactly 1 × 201, N−1 × 409.
-- T3.10 [I-10, ADR lock order] Same existing vehicle, two dealerships, overlapping intervals, in parallel → status set is exactly {201, 409}; no 500 (deadlock 40P01) and no timeout.
-- T3.11 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel requests, non-overlapping times → both 201; exactly one Customer row and one Vehicle row.
-- T3.12 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel requests, overlapping times → exactly 1 × 201, 1 × 409; one Vehicle row; no 500.
-- T3.13 [Resolution, concurrent new plate] Same NEW plate, different phones, two parallel requests → exactly 1 × 201, 1 × 409 (plate/phone mismatch); no 500.
 - T3.14 [Resolution, rejected booking creates nothing] A rejected booking with a new plate (e.g. no free bay) leaves no Customer or Vehicle row.
-- T3.15 [ADR Layer 2] Raw SQL bypassing the app: overlapping `Confirmed` rows on the same bay / technician / vehicle → SQLSTATE 23P01 with constraint `appointment_bay_no_overlap` / `appointment_technician_no_overlap` / `appointment_vehicle_no_overlap`; touching `[)` intervals → accepted; overlap with an existing `Cancelled` row → accepted.
-- T3.16 [ADR Layer 2] Adapter mapping: a 23P01 from each constraint (triggered by calling the repository insert directly, bypassing locks) maps to Bay / Technician / VehicleUnavailableException → 409.
+- T3.16 [ADR Layer 2] Adapter mapping: a 23P01 from each constraint (triggered by calling the adapter's appointment insert directly, bypassing locks) is rethrown as Bay / Technician / VehicleUnavailableException (one test each).
+
+## Round 3c — Concurrency
+
+File: `tests/integration/scheduling/booking-concurrency.integration.spec.ts` — run with `pnpm test:integration`.
+
+Allowed: `src/modules/scheduling/infrastructure/**`, `tests/integration/support/**`.
+
+- T3.5 [I-3] Last-bay race: N = 10 parallel bookings, same slot, 1 free bay, technicians plentiful → exactly 1 succeeds, N−1 BayUnavailableException, no unexpected error.
+- T3.6 [I-3] Last-technician race: 1 free qualified technician, bays plentiful → exactly 1 succeeds, N−1 TechnicianUnavailableException, no unexpected error.
+- T3.7 [I-3] Partial-overlap race: N bookings with staggered starts that all pairwise overlap the single free bay (e.g. 09:00, 09:30, 10:00 with 120 min) → exactly 1 succeeds.
+- T3.8 [ADR Layer 1] No false contention: 2 parallel bookings, same dealership, 2 free bays + 2 free qualified technicians → both succeed, with distinct bays and distinct technicians. This is the only case that fails when Layer 1 is broken (Layer 2 would reject the second booking).
+- T3.9 [I-10] Same existing vehicle, same dealership: N parallel bookings → exactly 1 succeeds, N−1 VehicleUnavailableException.
+- T3.10 [I-10, ADR lock order] Same existing vehicle, two dealerships, overlapping intervals, in parallel → exactly 1 succeeds and 1 VehicleUnavailableException; no deadlock (40P01) and no timeout.
+- T3.11 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel bookings, non-overlapping times → both succeed; exactly one Customer row and one Vehicle row.
+- T3.12 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel bookings, overlapping times → exactly 1 succeeds, 1 VehicleUnavailableException; one Vehicle row; no unexpected error.
+- T3.13 [Resolution, concurrent new plate] Same NEW plate, different phones, two parallel bookings → exactly 1 succeeds, 1 PlatePhoneMismatchException; no unexpected error.
 
 ## Round 4a — Presentation: request DTO validation (no DB)
 
