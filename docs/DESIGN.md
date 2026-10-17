@@ -25,7 +25,7 @@ Complete MVP system design and workflow, architectural decision record (ADR-0001
 
 **[Resolved]** Also:
 
-- A booking frontend — one page to book an appointment.
+- A booking frontend — one page to book an appointment and look up a vehicle's appointments.
 - A seed script that loads sample master data (dealerships, service bays, technicians with skills, and service types only) so the system can be run and tested. Customers and vehicles are created through booking.
 
 ### Scope Decision [Resolved]
