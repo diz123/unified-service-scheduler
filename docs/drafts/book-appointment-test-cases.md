@@ -205,3 +205,13 @@ Seed data (DESIGN.md Target Deliverables: master data only — dealerships, serv
 - T6.3 Re-seeding never touches customers, vehicles or appointments: book one appointment over HTTP, re-seed, the appointment, customer and vehicle are unchanged.
 - T6.4 After seeding, booking each service type whose skill is covered, at a valid future time, returns 201 (seed data is consistent).
 - T6.5 After seeding, booking the uncovered service type returns 422 `NO_QUALIFIED_TECHNICIAN`.
+
+## Round 7 — Input length limits (no DB)
+
+File: `tests/unit/scheduling/input-lengths.dto.spec.ts` — run with `pnpm test`. Source of truth: DESIGN.md "Input lengths". Validates both request DTOs in isolation (class-validator), like Round 4a.
+
+Allowed: `src/modules/scheduling/presentation/dtos/**`.
+
+- T7.1 Book Appointment DTO: each of `name` (100), `phone` (20), `licensePlate` (20), `make` (50), `model` (50) at exactly its limit → accepted; one character over → rejected with a constraint on that field only (it.each, one row per field per outcome).
+- T7.2 Look Up Appointments DTO: `licensePlate` (20) and `phone` (20) at exactly the limit → accepted; one character over → rejected on that field only.
+- T7.3 The limit is checked before normalization: a `licensePlate` of 21 characters that normalizes to fewer (e.g. with spaces and dots) → rejected.
