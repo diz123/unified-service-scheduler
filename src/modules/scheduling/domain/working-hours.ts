@@ -27,18 +27,29 @@ const parseMinutes = (hhmm: string): number => {
   return hours * 60 + minutes;
 };
 
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+const formatterFor = (timezone: string): Intl.DateTimeFormat => {
+  let formatter = formatters.get(timezone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    formatters.set(timezone, formatter);
+  }
+  return formatter;
+};
+
 /** Offset of `timezone` from UTC at `instantMs`, in ms (local = UTC + offset). */
 const offsetMs = (instantMs: number, timezone: string): number => {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).formatToParts(new Date(instantMs));
+  const parts = formatterFor(timezone).formatToParts(new Date(instantMs));
   const part = (type: Intl.DateTimeFormatPartTypes): number =>
     Number(parts.find((p) => p.type === type)?.value);
   const localAsUtc = Date.UTC(part('year'), part('month') - 1, part('day'), part('hour'), part('minute'), part('second'));
