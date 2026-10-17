@@ -102,3 +102,11 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 08:54 — Phase 4 — TDD Green Round 1b (license plate normalization)
 
 /tdd-green License plate normalization (Round 1b) -- allowed: src/modules/scheduling/domain/license-plate.ts
+
+### 2026-10-17 09:05 — Phase 4 — TDD Red Round 2 (happy path & allocation)
+
+/tdd-red Round 2, section "Happy path & allocation" -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 09:27 — Phase 4 — TDD Green Round 2 (happy path & allocation)
+
+/tdd-green Book appointment happy path & allocation (Round 2, T2.1–T2.9) -- allowed: src/modules/scheduling/application/book-appointment.use-case.ts, src/modules/scheduling/domain/working-hours.ts (add an exported helper only; do not change existing behavior)

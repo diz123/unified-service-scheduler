@@ -110,3 +110,9 @@ export function assertOvernightConsent(window: ServiceWindow, overnightConsent?:
     throw new OvernightConsentRequiredException();
   }
 }
+
+/** The local calendar day in `timezone` that contains `instant`, as a UTC `[from, to)` range. */
+export function localDayRange(instant: Date, timezone: string): { from: Date; to: Date } {
+  const day = startOfDay(toLocalMs(instant, timezone));
+  return { from: fromLocalMs(day, timezone), to: fromLocalMs(day + MS_PER_DAY, timezone) };
+}

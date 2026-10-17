@@ -18,3 +18,7 @@ export class OvernightConsentRequiredException extends Error {
     this.name = 'OvernightConsentRequiredException';
   }
 }
+
+export class BayUnavailableException extends Error {}
+
+export class TechnicianUnavailableException extends Error {}
