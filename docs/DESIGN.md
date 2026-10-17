@@ -196,6 +196,8 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 
 **Error response format** **[Resolved]**: every error body is `{ statusCode, code, message }`; validation errors add `details` (string array, one entry per invalid field). Exception class names never appear in responses. `message` is English for debugging; clients rely on `code`.
 
+Errors raised outside the scheduling exception filter use the same body **[Resolved]**: malformed JSON body → 400 `VALIDATION_FAILED`; unknown route → 404 `ROUTE_NOT_FOUND`; any unexpected error → 500 `INTERNAL_ERROR` with the generic message "Internal server error". The original error message and stack are logged server-side only and never returned.
+
 **Rejection responses** (Code column **[Resolved]**):
 
 | Condition | HTTP | Code | Tag |
