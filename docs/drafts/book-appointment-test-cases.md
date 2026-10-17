@@ -215,3 +215,46 @@ Allowed: `src/modules/scheduling/presentation/dtos/**`.
 - T7.1 Book Appointment DTO: each of `name` (100), `phone` (20), `licensePlate` (20), `make` (50), `model` (50) at exactly its limit → accepted; one character over → rejected with a constraint on that field only (it.each, one row per field per outcome).
 - T7.2 Look Up Appointments DTO: `licensePlate` (20) and `phone` (20) at exactly the limit → accepted; one character over → rejected on that field only.
 - T7.3 The limit is checked before normalization: a `licensePlate` of 21 characters that normalizes to fewer (e.g. with spaces and dots) → rejected.
+
+## Round 6b — Seed script: five Ho Chi Minh City dealerships (real PostgreSQL)
+
+File: `tests/integration/seed/seed.integration.spec.ts` — run with `pnpm test:integration`.
+
+Allowed: `prisma/seed.ts`, `tests/integration/seed/**`, `tests/integration/support/**`.
+
+Supersedes the Round 6 seed data. Agreed 2026-10-17: more, balanced dealerships (4–8 bays each), all in Ho Chi Minh City, so the demo covers the main rejection paths. Still master data only (DESIGN.md Target Deliverables).
+
+Seed data:
+
+| Dealership | Hours | Bays | Technicians | Service types (duration, required skill) |
+|---|---|---|---|---|
+| Ben Thanh Service Center (existing) | 08:00–17:00 | 4 | 6 | Oil change (60, Maintenance), Brake inspection (90, Brakes & Suspension), EV battery check (120, EV Charging — uncovered) |
+| Thu Duc Service Center (existing) | 07:30–19:00 | 5 | 8 | Oil change (60, Maintenance), EV battery check (120, EV Charging), Brake inspection (90, Brakes & Suspension — uncovered) |
+| Phu My Hung Service Center | 08:00–17:30 | 8 | 14 | Oil change (60, Maintenance), Tire rotation (45, Tires), AC service (120, Air Conditioning), Full inspection (240, Inspection), Transmission repair (180, Transmission — uncovered) |
+| Tan Binh Service Center | 07:00–12:00 | 4 | 6 | Oil change (60, Maintenance), Full inspection (240, Inspection), Body paint (300, Paint — uncovered) |
+| Go Vap EV Center | 09:00–18:00 | 6 | 4 | EV battery check (120, EV Charging), EV software update (60, Electrical), Brake inspection (90, Brakes & Suspension — uncovered) |
+
+Rules for the data:
+- All dealerships use `Asia/Ho_Chi_Minh` (A-4).
+- Bay and technician names are zero-padded per dealership (`Bay 01`…, `Tech 01`…) (A-2, A-3).
+- Existing Ben Thanh and Thu Duc rows keep their ids and field values; only new bays and technicians are added there. Existing technicians' skills are unchanged.
+- Skill coverage that the demo cases rely on:
+  - Ben Thanh: exactly 5 technicians hold Maintenance; exactly 1 holds Brakes & Suspension; none holds EV Charging.
+  - Thu Duc: exactly 1 technician holds EV Charging; none holds Brakes & Suspension.
+  - Phu My Hung: every covered skill is held by at least 2 technicians; none holds Transmission.
+  - Tan Binh: at least 1 technician holds Inspection; none holds Paint.
+  - Go Vap: exactly 1 technician holds EV Charging; at least 2 hold Electrical; none holds Brakes & Suspension.
+- New ids are fixed constants, exported in `SEED_IDS` like the existing ones.
+
+Cases:
+
+- T6.1 (rev) On an empty database, seeding creates exactly the table above: 5 dealerships with their hours and timezone; per dealership the bay, technician and service-type counts; each service type's duration and required skill.
+- T6.2, T6.2b, T6.3 Unchanged (idempotent, fixed ids, bookings untouched), now over the new data.
+- T6.4 (rev) Every covered service type at every dealership can be booked at a valid future time (201).
+- T6.5 (rev) The uncovered service type at each of the 5 dealerships is rejected with 422 `NO_QUALIFIED_TECHNICIAN` (one test per dealership).
+- T6.6 Existing data is preserved: the Ben Thanh and Thu Duc dealerships, service types, and the bays and technicians from Round 6 keep their ids and field values.
+- T6.7 Skill coverage matches the rules above (one test per dealership).
+- T6.8 [demo: no free bay] Ben Thanh, Oil change, 5 bookings with different plates at the same valid start → the first 4 return 201, the 5th returns 409 `BAY_UNAVAILABLE`.
+- T6.9 [demo: no free technician] Go Vap, EV battery check, 2 bookings with different plates at the same valid start → the first returns 201, the 2nd returns 409 `TECHNICIAN_UNAVAILABLE` while bays are still free.
+- T6.10 [demo: overnight] Tan Binh, Full inspection starting 09:00 local on a future day: without consent → 400 `OVERNIGHT_CONSENT_REQUIRED`; with `overnightConsent: true` → 201 with `endTime` on the next local day.
+- T6.11 Names are zero-padded and unique within each dealership: bays `Bay 01`…`Bay NN`, technicians `Tech 01`…`Tech NN`, with NN equal to that dealership's count.

@@ -41,4 +41,7 @@ Thumbs.db
 
 # Obsidian local workspace cache (if editing docs with Obsidian)
 .obsidian/workspace.json
-.obsidian/cache/.playwright-mcp/
+.obsidian/cache/
+
+# Browser tool output (Claude Code smoke tests)
+.playwright-mcp/
