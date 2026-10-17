@@ -12,7 +12,7 @@
     "start": "node dist/main",
     "typecheck": "tsc --noEmit",
     "test": "jest --testPathPatterns=tests/unit --passWithNoTests",
-    "test:integration": "jest --testPathPatterns=tests/integration --passWithNoTests",
+    "test:integration": "jest --testPathPatterns=tests/integration --runInBand --passWithNoTests",
     "lint": "eslint .",
     "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm prisma validate"
   },
