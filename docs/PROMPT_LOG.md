@@ -391,3 +391,7 @@ Scope:
 Done when: pnpm verify passes; the reviewer subagent has reviewed the diff (show its table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; one commit proposal. Never stage or commit.
 
 Stop & ask if: a behavior is not in DESIGN or this prompt; a file outside the allowed list is needed; a package is needed.
+
+### 2026-10-17 22:26 — Phase 4 — TDD Round 6b
+
+/tdd-round Round 6b -- docs/drafts/book-appointment-test-cases.md
