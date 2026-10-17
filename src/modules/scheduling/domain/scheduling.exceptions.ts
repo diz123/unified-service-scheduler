@@ -19,14 +19,44 @@ export class OvernightConsentRequiredException extends Error {
   }
 }
 
-export class BayUnavailableException extends Error {}
+export class BayUnavailableException extends Error {
+  constructor(message = 'No service bay is available for the requested time') {
+    super(message);
+    this.name = 'BayUnavailableException';
+  }
+}
 
-export class TechnicianUnavailableException extends Error {}
+export class TechnicianUnavailableException extends Error {
+  constructor(message = 'No qualified technician is available for the requested time') {
+    super(message);
+    this.name = 'TechnicianUnavailableException';
+  }
+}
 
-export class PlatePhoneMismatchException extends Error {}
+export class PlatePhoneMismatchException extends Error {
+  constructor(message = 'This license plate is registered with a different phone number') {
+    super(message);
+    this.name = 'PlatePhoneMismatchException';
+  }
+}
 
-export class ResourceNotFoundException extends Error {}
+export class ResourceNotFoundException extends Error {
+  constructor(message = 'Dealership or service type not found') {
+    super(message);
+    this.name = 'ResourceNotFoundException';
+  }
+}
 
-export class SkillMismatchException extends Error {}
+export class SkillMismatchException extends Error {
+  constructor(message = 'No technician at this dealership has the skill this service requires') {
+    super(message);
+    this.name = 'SkillMismatchException';
+  }
+}
 
-export class VehicleUnavailableException extends Error {}
+export class VehicleUnavailableException extends Error {
+  constructor(message = 'This vehicle already has a booking that overlaps the requested time') {
+    super(message);
+    this.name = 'VehicleUnavailableException';
+  }
+}
