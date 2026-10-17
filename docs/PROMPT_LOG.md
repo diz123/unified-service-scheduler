@@ -126,3 +126,7 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 09:51 — Phase 4 — TDD Red Round 2 (T2.22 time rules in use case)
 
 /tdd-red Round 2, T2.22 only -- docs/drafts/book-appointment-test-cases.md -- append to tests/unit/scheduling/book-appointment.use-case.spec.ts
+
+### 2026-10-17 10:05 — Phase 4 — TDD Green Round 2 (rejections, validation order, time rules)
+
+/tdd-green Rejections, validation order and time rules (Round 2, T2.16–T2.22) -- allowed: src/modules/scheduling/application/book-appointment.use-case.ts. Follow DESIGN.md Validation order: 404 → past → working hours → overnight consent → plate/phone → skill → vehicle overlap → bay → technician. Check working hours before computeServiceWindow; check consent right after it.

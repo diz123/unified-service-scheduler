@@ -3,9 +3,18 @@ import { normalizeLicensePlate } from '../domain/license-plate';
 import {
   BayUnavailableException,
   PlatePhoneMismatchException,
+  ResourceNotFoundException,
+  SkillMismatchException,
   TechnicianUnavailableException,
+  VehicleUnavailableException,
 } from '../domain/scheduling.exceptions';
-import { computeServiceWindow, localDayRange } from '../domain/working-hours';
+import {
+  assertOvernightConsent,
+  assertStartNotInPast,
+  assertStartWithinWorkingHours,
+  computeServiceWindow,
+  localDayRange,
+} from '../domain/working-hours';
 import { BookAppointmentCommand } from './commands/book-appointment.command';
 import { BookingTransaction, BookingUnitOfWork } from './ports/booking-unit-of-work.port';
 import { Clock } from './ports/clock.port';
@@ -28,18 +37,40 @@ export class BookAppointmentUseCase {
   private async book(tx: BookingTransaction, command: BookAppointmentCommand, licensePlate: string): Promise<Appointment> {
     const dealership = await tx.findDealership(command.dealershipId);
     const serviceType = await tx.findServiceType(command.serviceTypeId);
-    if (!dealership || !serviceType) {
-      // Replaced by ResourceNotFoundException in the Rejections round.
-      throw new Error('Dealership or service type not found');
+    if (!dealership || !serviceType || serviceType.dealershipId !== dealership.id) {
+      throw new ResourceNotFoundException();
     }
+
+    const startTime = command.startTime;
+    assertStartNotInPast(startTime, this.clock.now());
+    assertStartWithinWorkingHours(startTime, dealership);
+    const window = computeServiceWindow(startTime, serviceType.durationMinutes, dealership);
+    assertOvernightConsent(window, command.overnightConsent);
+    const endTime = window.endTime;
 
     const existing = await tx.findVehicleByPlate(licensePlate);
     if (existing && withoutSpaces(existing.owner.phone) !== withoutSpaces(command.phone)) {
       throw new PlatePhoneMismatchException();
     }
 
-    const startTime = command.startTime;
-    const { endTime } = computeServiceWindow(startTime, serviceType.durationMinutes, dealership);
+    const technicians = (await tx.listTechnicians(dealership.id)).filter((t) =>
+      t.skills.includes(serviceType.requiredSkill),
+    );
+    if (technicians.length === 0) {
+      throw new SkillMismatchException();
+    }
+
+    if (existing) {
+      const vehicleBookings = await tx.findConfirmedAppointments({
+        from: startTime,
+        to: endTime,
+        vehicleId: existing.vehicle.id,
+      });
+      if (vehicleBookings.length > 0) {
+        throw new VehicleUnavailableException();
+      }
+    }
+
     const overlapping = await tx.findConfirmedAppointments({ from: startTime, to: endTime, dealershipId: dealership.id });
     const busyBays = new Set(overlapping.map((a) => a.serviceBayId));
     const busyTechnicians = new Set(overlapping.map((a) => a.technicianId));
@@ -49,9 +80,7 @@ export class BookAppointmentUseCase {
       throw new BayUnavailableException();
     }
 
-    const freeTechnicians = (await tx.listTechnicians(dealership.id)).filter(
-      (t) => t.skills.includes(serviceType.requiredSkill) && !busyTechnicians.has(t.id),
-    );
+    const freeTechnicians = technicians.filter((t) => !busyTechnicians.has(t.id));
     if (freeTechnicians.length === 0) {
       throw new TechnicianUnavailableException();
     }

@@ -35,3 +35,4 @@
 | 2026-10-17 09:48 | /tdd-red Round 2 rejections & validation order | AI | T2.16–T2.21 (T2.22 not in file); T2.21 split a–f; 7 red, T2.19/T2.20/T2.21c/T2.21f already pass; 3 exception stubs | tests/unit/scheduling/book-appointment.use-case.spec.ts, src/modules/scheduling/domain/scheduling.exceptions.ts |
 | 2026-10-17 09:51 | /tdd-red Round 2 T2.22 time rules in use case | AI | T2.22 red (past start resolves); no new stubs | tests/unit/scheduling/book-appointment.use-case.spec.ts |
 | 2026-10-17 09:56 | Split T2.22 into T2.22a–d | Engineer | 4 separate it() blocks; a–c red, d passes | tests/unit/scheduling/book-appointment.use-case.spec.ts |
+| 2026-10-17 10:05 | /tdd-green Round 2 rejections, validation order, time rules | AI | Checks in recorded order; 404 incl. service type of other dealership; skill 422 before vehicle overlap; 44/44 green | src/modules/scheduling/application/book-appointment.use-case.ts |
