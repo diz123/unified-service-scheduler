@@ -11,8 +11,12 @@ import {
 } from '../../../src/modules/scheduling/domain/entities';
 import {
   BayUnavailableException,
+  PastStartTimeException,
   PlatePhoneMismatchException,
+  ResourceNotFoundException,
+  SkillMismatchException,
   TechnicianUnavailableException,
+  VehicleUnavailableException,
 } from '../../../src/modules/scheduling/domain/scheduling.exceptions';
 import { InMemoryBookingStore } from './fakes/in-memory-booking-store';
 
@@ -433,5 +437,199 @@ describe('BookAppointmentUseCase — customer & vehicle resolution', () => {
     await expect(
       countryCode.world.book(countryCode.serviceType, SLOT, { phone: '+84901234567', licensePlate: '51A12345' }),
     ).rejects.toThrow(PlatePhoneMismatchException);
+  });
+});
+
+describe('BookAppointmentUseCase — rejections', () => {
+  // 09:00–10:00 local on 2030-01-15
+  const SLOT = '2030-01-15T02:00:00Z';
+  const SLOT_END = '2030-01-15T03:00:00Z';
+
+  it('T2.16 an unknown dealership, unknown service type, or service type of another dealership is not found', async () => {
+    const world = new World();
+    const dealershipA = world.dealership('Dealership A');
+    const dealershipB = world.dealership('Dealership B');
+    const serviceTypeA = world.serviceType(dealershipA);
+    const serviceTypeB = world.serviceType(dealershipB);
+    world.bay(dealershipA, 'Bay 01');
+    world.technician(dealershipA, 'Tech 01');
+
+    await expect(world.book(serviceTypeA, SLOT, { dealershipId: 'unknown-dealership' })).rejects.toThrow(
+      ResourceNotFoundException,
+    );
+    await expect(world.book(serviceTypeA, SLOT, { serviceTypeId: 'unknown-service-type' })).rejects.toThrow(
+      ResourceNotFoundException,
+    );
+    await expect(world.book(serviceTypeB, SLOT, { dealershipId: dealershipA.id })).rejects.toThrow(
+      ResourceNotFoundException,
+    );
+  });
+
+  it('T2.17 no technician at the dealership holds the required skill, even if another dealership has one', async () => {
+    const world = new World();
+    const dealershipA = world.dealership('Dealership A');
+    const dealershipB = world.dealership('Dealership B');
+    const serviceTypeA = world.serviceType(dealershipA);
+    world.bay(dealershipA, 'Bay 01');
+    world.technician(dealershipA, 'Tech 01', ['Electrical']);
+    world.technician(dealershipB, 'Tech 01');
+
+    await expect(world.book(serviceTypeA, SLOT)).rejects.toThrow(SkillMismatchException);
+  });
+
+  it('T2.18 a vehicle with an overlapping Confirmed booking at the same or another dealership is unavailable', async () => {
+    const sameDealership = new World();
+    {
+      const dealership = sameDealership.dealership();
+      const serviceType = sameDealership.serviceType(dealership);
+      const bay = sameDealership.bay(dealership, 'Bay 01');
+      sameDealership.bay(dealership, 'Bay 02');
+      const technician = sameDealership.technician(dealership, 'Tech 01');
+      sameDealership.technician(dealership, 'Tech 02');
+      const vehicle = sameDealership.vehicle('51A12345', '0901234567');
+      sameDealership.appointment({ serviceType, bay, technician, vehicle, startTime: SLOT, endTime: SLOT_END });
+
+      await expect(
+        sameDealership.book(serviceType, SLOT, { phone: '0901234567', licensePlate: '51A12345' }),
+      ).rejects.toThrow(VehicleUnavailableException);
+    }
+
+    const otherDealership = new World();
+    {
+      const dealershipA = otherDealership.dealership('Dealership A');
+      const dealershipB = otherDealership.dealership('Dealership B');
+      const serviceTypeA = otherDealership.serviceType(dealershipA);
+      const serviceTypeB = otherDealership.serviceType(dealershipB);
+      otherDealership.bay(dealershipA, 'Bay 01');
+      otherDealership.technician(dealershipA, 'Tech 01');
+      const bayB = otherDealership.bay(dealershipB, 'Bay 01');
+      const techB = otherDealership.technician(dealershipB, 'Tech 01');
+      const vehicle = otherDealership.vehicle('51A12345', '0901234567');
+      otherDealership.appointment({
+        serviceType: serviceTypeB,
+        bay: bayB,
+        technician: techB,
+        vehicle,
+        startTime: SLOT,
+        endTime: SLOT_END,
+      });
+
+      await expect(
+        otherDealership.book(serviceTypeA, SLOT, { phone: '0901234567', licensePlate: '51A12345' }),
+      ).rejects.toThrow(VehicleUnavailableException);
+    }
+  });
+
+  it('T2.19 all bays overlapping the interval means bay unavailable, even with a free qualified technician', async () => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership);
+    const bay = world.bay(dealership, 'Bay 01');
+    const busyTech = world.technician(dealership, 'Tech 01');
+    world.technician(dealership, 'Tech 02');
+    world.appointment({ serviceType, bay, technician: busyTech, startTime: SLOT, endTime: SLOT_END });
+
+    await expect(world.book(serviceType, SLOT)).rejects.toThrow(BayUnavailableException);
+  });
+
+  it('T2.20 all qualified technicians busy means technician unavailable, even with a free bay', async () => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership);
+    world.bay(dealership, 'Bay 01');
+    const otherBay = world.bay(dealership, 'Bay 02');
+    const technician = world.technician(dealership, 'Tech 01');
+    world.appointment({ serviceType, bay: otherBay, technician, startTime: SLOT, endTime: SLOT_END });
+
+    await expect(world.book(serviceType, SLOT)).rejects.toThrow(TechnicianUnavailableException);
+  });
+});
+
+describe('BookAppointmentUseCase — T2.21 validation order: the earlier step wins', () => {
+  // 09:00–10:00 local on 2030-01-15; NOW is 2030-01-01
+  const SLOT = '2030-01-15T02:00:00Z';
+  const SLOT_END = '2030-01-15T03:00:00Z';
+  const PAST = '2029-12-31T02:00:00Z';
+
+  it('T2.21a unknown dealership + past startTime → not found', async () => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership);
+
+    await expect(world.book(serviceType, PAST, { dealershipId: 'unknown-dealership' })).rejects.toThrow(
+      ResourceNotFoundException,
+    );
+  });
+
+  it('T2.21b past startTime + plate/phone mismatch → past start', async () => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership);
+    world.bay(dealership, 'Bay 01');
+    world.technician(dealership, 'Tech 01');
+    world.vehicle('51A12345', '0901234567');
+
+    await expect(world.book(serviceType, PAST, { phone: '0999999999', licensePlate: '51A12345' })).rejects.toThrow(
+      PastStartTimeException,
+    );
+  });
+
+  it('T2.21c plate/phone mismatch + no skilled technician → plate/phone mismatch', async () => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership);
+    world.bay(dealership, 'Bay 01');
+    world.technician(dealership, 'Tech 01', ['Electrical']);
+    world.vehicle('51A12345', '0901234567');
+
+    await expect(world.book(serviceType, SLOT, { phone: '0999999999', licensePlate: '51A12345' })).rejects.toThrow(
+      PlatePhoneMismatchException,
+    );
+  });
+
+  it('T2.21d no skilled technician + vehicle overlap → skill mismatch', async () => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership);
+    world.bay(dealership, 'Bay 01');
+    const otherBay = world.bay(dealership, 'Bay 02');
+    const unqualified = world.technician(dealership, 'Tech 01', ['Electrical']);
+    const vehicle = world.vehicle('51A12345', '0901234567');
+    world.appointment({ serviceType, bay: otherBay, technician: unqualified, vehicle, startTime: SLOT, endTime: SLOT_END });
+
+    await expect(world.book(serviceType, SLOT, { phone: '0901234567', licensePlate: '51A12345' })).rejects.toThrow(
+      SkillMismatchException,
+    );
+  });
+
+  it('T2.21e vehicle overlap + all bays busy → vehicle unavailable', async () => {
+    const world = new World();
+    const dealershipA = world.dealership('Dealership A');
+    const dealershipB = world.dealership('Dealership B');
+    const serviceTypeA = world.serviceType(dealershipA);
+    const serviceTypeB = world.serviceType(dealershipB);
+    const bayA = world.bay(dealershipA, 'Bay 01');
+    const busyTechA = world.technician(dealershipA, 'Tech 01');
+    world.technician(dealershipA, 'Tech 02');
+    world.appointment({ serviceType: serviceTypeA, bay: bayA, technician: busyTechA, startTime: SLOT, endTime: SLOT_END });
+    const bayB = world.bay(dealershipB, 'Bay 01');
+    const techB = world.technician(dealershipB, 'Tech 01');
+    const vehicle = world.vehicle('51A12345', '0901234567');
+    world.appointment({ serviceType: serviceTypeB, bay: bayB, technician: techB, vehicle, startTime: SLOT, endTime: SLOT_END });
+
+    await expect(world.book(serviceTypeA, SLOT, { phone: '0901234567', licensePlate: '51A12345' })).rejects.toThrow(
+      VehicleUnavailableException,
+    );
+  });
+
+  it('T2.21f all bays busy + all technicians busy → bay unavailable', async () => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership);
+    const bay = world.bay(dealership, 'Bay 01');
+    const technician = world.technician(dealership, 'Tech 01');
+    world.appointment({ serviceType, bay, technician, startTime: SLOT, endTime: SLOT_END });
+
+    await expect(world.book(serviceType, SLOT)).rejects.toThrow(BayUnavailableException);
   });
 });

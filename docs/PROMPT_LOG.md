@@ -118,3 +118,7 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 09:34 — Phase 4 — TDD Green Round 2 (customer & vehicle resolution)
 
 /tdd-green Customer & vehicle resolution (Round 2, T2.10–T2.15) -- allowed: src/modules/scheduling/application/book-appointment.use-case.ts. Notes: run the plate lookup and phone check before allocation (Validation order step 4), keep customer/vehicle creation last; compare phones with spaces removed on both stored and input values.
+
+### 2026-10-17 09:48 — Phase 4 — TDD Red Round 2 (rejections & validation order)
+
+/tdd-red Round 2, section "Rejections" and "Validation order" (T2.16–T2.22) -- docs/drafts/book-appointment-test-cases.md

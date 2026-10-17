@@ -24,3 +24,9 @@ export class BayUnavailableException extends Error {}
 export class TechnicianUnavailableException extends Error {}
 
 export class PlatePhoneMismatchException extends Error {}
+
+export class ResourceNotFoundException extends Error {}
+
+export class SkillMismatchException extends Error {}
+
+export class VehicleUnavailableException extends Error {}
