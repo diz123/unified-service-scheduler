@@ -4,6 +4,8 @@
 
 **Amended**: 2026-10-17 — Layer 1 first lock changed from the Vehicle row to a plate advisory lock, so concurrent first bookings for the same new plate are serialised (DESIGN.md, Customer and vehicle resolution).
 
+**Erratum** (Amendment 1): the Layer 1 locks are issued with tagged-template `tx.$executeRaw`, not `$queryRaw`.
+
 ---
 
 ## Context

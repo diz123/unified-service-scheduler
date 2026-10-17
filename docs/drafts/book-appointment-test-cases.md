@@ -121,12 +121,12 @@ Allowed: `src/modules/scheduling/infrastructure/**`, `tests/integration/support/
 - T3.5 [I-3] Last-bay race: N = 10 parallel bookings, same slot, 1 free bay, technicians plentiful → exactly 1 succeeds, N−1 BayUnavailableException, no unexpected error.
 - T3.6 [I-3] Last-technician race: 1 free qualified technician, bays plentiful → exactly 1 succeeds, N−1 TechnicianUnavailableException, no unexpected error.
 - T3.7 [I-3] Partial-overlap race: N bookings with staggered starts that all pairwise overlap the single free bay (e.g. 09:00, 09:30, 10:00 with 120 min) → exactly 1 succeeds.
-- T3.8 [ADR Layer 1] No false contention: 2 parallel bookings, same dealership, 2 free bays + 2 free qualified technicians → both succeed, with distinct bays and distinct technicians. This is the only case that fails when Layer 1 is broken (Layer 2 would reject the second booking).
+- T3.8 [ADR Layer 1] No false contention: 2 parallel bookings, same dealership, 2 free bays + 2 free qualified technicians → both succeed, with distinct bays and distinct technicians. It fails when the Dealership row lock is missing (Layer 2 would reject the second booking); T3.6, T3.9 and T3.11–T3.13 also fail without Layer 1.
 - T3.9 [I-10] Same existing vehicle, same dealership: N parallel bookings → exactly 1 succeeds, N−1 VehicleUnavailableException.
 - T3.10 [I-10, ADR lock order] Same existing vehicle, two dealerships, overlapping intervals, in parallel → exactly 1 succeeds and 1 VehicleUnavailableException; no deadlock (40P01) and no timeout.
-- T3.11 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel bookings, non-overlapping times → both succeed; exactly one Customer row and one Vehicle row.
-- T3.12 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel bookings, overlapping times → exactly 1 succeeds, 1 VehicleUnavailableException; one Vehicle row; no unexpected error.
-- T3.13 [Resolution, concurrent new plate] Same NEW plate, different phones, two parallel bookings → exactly 1 succeeds, 1 PlatePhoneMismatchException; no unexpected error.
+- T3.11 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel bookings at two dealerships, non-overlapping times → both succeed; exactly one Customer row and one Vehicle row.
+- T3.12 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel bookings at two dealerships, overlapping times → exactly 1 succeeds, 1 VehicleUnavailableException; one Vehicle row; no unexpected error.
+- T3.13 [Resolution, concurrent new plate] Same NEW plate, different phones, two parallel bookings at two dealerships → exactly 1 succeeds, 1 PlatePhoneMismatchException; no unexpected error.
 - T3.19 [ADR Amendment 1, rollback under contention] Two different NEW plates, two parallel bookings for the last free bay → exactly 1 succeeds, 1 BayUnavailableException; exactly one Customer row and one Vehicle row remain.
 - Note (from Round 3b review): set the interactive transaction's `timeout`, `maxWait` and `isolationLevel` explicitly; races T3.5–T3.7 must end in 409s, never in a transaction-timeout error.
 
@@ -144,3 +144,4 @@ File: `tests/integration/scheduling/book-appointment.http.spec.ts` — run with 
 
 - T4.1 201 response contains `id`, `startTime`, `endTime`, `status`, assigned `ServiceBay`, assigned `Technician`.
 - T4.5 Exception → status mapping: one request each producing 400 (past), 404, 422, 409 (bay), 409 (plate/phone mismatch). The 400 request also proves the global validation pipe is wired.
+- T4.6 The exception filter maps a Prisma transaction timeout (P2028) to 503, not 500.

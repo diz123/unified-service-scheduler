@@ -206,6 +206,7 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 | `startTime` outside working hours (I-13) | 400 | **[Resolved]** |
 | Unknown `dealershipId` | 404 | **[Resolved]** |
 | Unknown `serviceTypeId`, or service type not offered by the dealership | 404 | **[Resolved]** |
+| Transaction timeout or lock wait exhausted under load | 503 (retryable) | **[Resolved]** |
 
 **Vehicle conflict** **[Resolved]**: a vehicle conflict raises `VehicleUnavailableException` → 409.
 
@@ -261,6 +262,8 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 10. **Customer identification** **[Resolved]** — No login. A customer is identified by the vehicle's license plate. MVP assumes one plate maps to one phone number; a booking with a known plate and a different phone is rejected.
 
 11. **Non-blank identity fields** **[Resolved]** — `name` must contain at least one non-whitespace character; `licensePlate` must contain at least one letter or digit after normalization; `phone` must contain at least one digit after removing spaces. A violation is rejected (400) at Validation order step 1.
+
+12. **Booking transaction limits** **[Resolved]** — The booking transaction runs at READ COMMITTED with a 15 s timeout and a 10 s maximum wait for a connection.
 
 ---
 

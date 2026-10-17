@@ -169,3 +169,12 @@ Defer both Minor findings to Round 3c.
 ### 2026-10-17 12:15 — Phase 4 — TDD Round 3c (concurrency)
 
 /tdd-round Round 3c -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 12:35 — Phase 4 — Record transaction limits and doc fixes
+
+recordtimeouts, as [Resolved]: I approve transaction timeout 15 s, maxWait 10 s, isolation READ COMMITTED.
+Also:
+1. DESIGN.md rejection table: add "Transaction timeout or lock wait exhausted under load → 503 (retryable)".
+2. Case list, Round 4b: add T4.6 — the exception filter maps a Prisma transaction timeout (P2028) to 503, not 500.
+3. Doc fixes: correct T3.8's note (it is no longer the only Layer 1 case); add "at two dealerships" to T3.11–T3.13; in ADR-0001 Amendment 1, add one erratum line: locks use tagged-template tx.$executeRaw, not $queryRaw.
+Docs only, no code. Show git diff.
