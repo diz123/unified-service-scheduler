@@ -102,7 +102,7 @@ Preconditions: Prisma pool size ≥ N (ADR-0001). Every concurrent request uses 
 
 File: `tests/unit/scheduling/book-appointment.dto.spec.ts` — run with `pnpm test`. Validates the HTTP DTO in isolation (class-validator), before mapping to the application command.
 
-- T4.2 [Validation step 1] 400: each required field missing (`name`, `phone`, `licensePlate`, `dealershipId`, `serviceTypeId`, `startTime`); `startTime` not ISO 8601; `overnightConsent` not a boolean; blank after normalization (A-11, PENDING APPROVAL): `name: "   "`, `licensePlate: " - . "`, `phone: "   "`. `make`, `model`, `overnightConsent` omitted → accepted.
+- T4.2 [Validation step 1] 400: each required field missing (`name`, `phone`, `licensePlate`, `dealershipId`, `serviceTypeId`, `startTime`); `startTime` not ISO 8601; `overnightConsent` not a boolean; blank after normalization (A-11): `name: "   "`, `licensePlate: " - . "`, `phone: "   "`. `make`, `model`, `overnightConsent` omitted → accepted.
 - T4.3 [Validation step 1] 400: `startTime` with an offset other than `Z` (e.g. `+07:00`).
 - T4.4 [Validation step 1] 400: `startTime` with non-zero seconds or milliseconds.
 
