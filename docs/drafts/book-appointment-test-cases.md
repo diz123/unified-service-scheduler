@@ -20,12 +20,12 @@ Default fixture: Dealership D1, `Asia/Ho_Chi_Minh`, 08:00–17:00. Times are loc
 - T1.4 [I-7 spec example] Roll over: 16:00 + 120 → 09:00 next day, spansOvernight = true.
 - T1.5 [I-7] Multi-day: 08:00 + 720 → 11:00 next day, spansOvernight = true.
 - T1.6 [I-4, I-7] Timezone not hardcoded: same local start and duration at D1 and at D2 (different tz, e.g. `Asia/Tokyo`) → different UTC endTime.
-- T1.7 [I-11] Overnight without consent: overnight result with `overnightConsent = false` → rejected; field omitted → rejected.
+- T1.7 [I-11] Overnight without consent: overnight result with `overnightConsent = false` → OvernightConsentRequiredException; field omitted → OvernightConsentRequiredException.
 - T1.8 [I-11] Overnight with consent: `overnightConsent = true` → valid.
 - T1.9 [I-11] Consent ignored when not overnight: same-day result with `overnightConsent = true` → valid.
 - T1.10 [I-11] Local date ≠ UTC date: dealership opening 06:00 local (= 23:00Z previous UTC day), service ends the same local day → no consent required even though the UTC dates differ.
-- T1.11 [I-9] Past: `startTime < now` → rejected; `startTime == now` → rejected (I-9: past means `startTime <= now`).
-- T1.12 [I-13] Start within working hours: 07:59 → rejected; 17:00 → rejected; 08:00 → accepted; 16:59 → accepted.
+- T1.11 [I-9] Past: `startTime < now` → PastStartTimeException; `startTime == now` → PastStartTimeException (I-9: past means `startTime <= now`).
+- T1.12 [I-13] Start within working hours: 07:59 → OutsideWorkingHoursException; 17:00 → OutsideWorkingHoursException; 08:00 → accepted; 16:59 → accepted.
 
 ## Round 1b — Domain: license plate normalization
 
@@ -102,7 +102,7 @@ Preconditions: Prisma pool size ≥ N (ADR-0001). Every concurrent request uses 
 
 File: `tests/unit/scheduling/book-appointment.dto.spec.ts` — run with `pnpm test`. Validates the HTTP DTO in isolation (class-validator), before mapping to the application command.
 
-- T4.2 [Validation step 1] 400: each required field missing (`name`, `phone`, `licensePlate`, `dealershipId`, `serviceTypeId`, `startTime`); `startTime` not ISO 8601; `overnightConsent` not a boolean. `make`, `model`, `overnightConsent` omitted → accepted.
+- T4.2 [Validation step 1] 400: each required field missing (`name`, `phone`, `licensePlate`, `dealershipId`, `serviceTypeId`, `startTime`); `startTime` not ISO 8601; `overnightConsent` not a boolean; blank after normalization (A-11, PENDING APPROVAL): `name: "   "`, `licensePlate: " - . "`, `phone: "   "`. `make`, `model`, `overnightConsent` omitted → accepted.
 - T4.3 [Validation step 1] 400: `startTime` with an offset other than `Z` (e.g. `+07:00`).
 - T4.4 [Validation step 1] 400: `startTime` with non-zero seconds or milliseconds.
 

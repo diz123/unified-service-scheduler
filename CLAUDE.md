@@ -92,7 +92,8 @@ The ADR MUST state explicitly which criteria were traded off against each other.
   | `VehicleUnavailableException`, `PlatePhoneMismatchException`      | 409 Conflict             |
   | `SkillMismatchException`                                          | 422 Unprocessable Entity |
   | Input validation errors                                           | 400 Bad Request          |
-  | `ResourceNotFoundException` (customer, vehicle, dealership, etc.) | 404 Not Found            |
+  | `PastStartTimeException`, `OutsideWorkingHoursException`, `OvernightConsentRequiredException` | 400 Bad Request |
+  | `ResourceNotFoundException` (dealership, service type)            | 404 Not Found            |
 
 - **YAGNI & Simplicity**: Keep the design focused on the core service layer. No distributed-systems complexity unless strictly required.
 
