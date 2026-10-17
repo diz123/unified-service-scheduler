@@ -132,7 +132,7 @@ describe('GET /dealerships/:dealershipId/service-types (T5.3, T5.4)', () => {
   });
 });
 
-describe('POST /appointments/lookup (T5.5–T5.10)', () => {
+describe('POST /appointments/lookup (T5.5–T5.12)', () => {
   it('T5.5 returns the vehicle\'s appointments in every status, newest startTime first, with only the public fields', async () => {
     const garage = await seedGarage('Dealer A');
     const vehicle = await seedVehicle('51A12345', '0901234567');

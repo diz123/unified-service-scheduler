@@ -28,7 +28,8 @@ const httpStatusOf = (exception: unknown): number | undefined => {
 
 /**
  * DESIGN.md "Error response format": errors raised outside the scheduling exception filter use the same body.
- * Errors that are not HTTP exceptions are logged server-side and never returned.
+ * Errors with no HTTP status (neither an HttpException nor a 4xx client error with `expose: true`) become a generic 500;
+ * their message and stack are logged server-side and never returned.
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

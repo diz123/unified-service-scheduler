@@ -102,4 +102,5 @@ model Appointment {
   status        AppointmentStatus
 
   @@index([dealershipId, startTime])
+  @@index([vehicleId, startTime])
 }

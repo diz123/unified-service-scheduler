@@ -85,7 +85,7 @@ export class PrismaBookingTransaction implements BookingTransaction {
   }
 
   findConfirmedAppointments(query: ConfirmedAppointmentQuery): Promise<Appointment[]> {
-    // Range form matches the partial GiST indexes behind the exclusion constraints.
+    // Overlap (I-2) written with the same tstzrange '[)' form as the exclusion constraints.
     const filters = [
       Prisma.sql`"status" = 'Confirmed'`,
       Prisma.sql`tstzrange("startTime", "endTime", '[)') && tstzrange(${query.from}::timestamptz, ${query.to}::timestamptz, '[)')`,

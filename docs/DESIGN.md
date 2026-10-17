@@ -157,8 +157,7 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 
 ## API Contract
 
-> Stack-agnostic logical contract. Precise HTTP paths, verbs, headers, and serialization formats
-> are specified in Phase 3 after ADR-0001 is accepted.
+> Stack-agnostic logical contract. HTTP paths, verbs and response bodies are in each operation's **HTTP** paragraph.
 
 ### Operation: Book Appointment
 

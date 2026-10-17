@@ -24,7 +24,7 @@ const fixed =
   (): string =>
     code;
 
-/** CLAUDE.md §7 statuses and DESIGN.md error codes. Errors not listed fall through to Nest's default handling. */
+/** CLAUDE.md §7 statuses and DESIGN.md error codes. Errors not listed are handled by AllExceptionsFilter. */
 const MAPPINGS: readonly ErrorMapping[] = [
   { type: PastStartTimeException, status: HttpStatus.BAD_REQUEST, code: fixed('START_TIME_IN_PAST') },
   { type: OutsideWorkingHoursException, status: HttpStatus.BAD_REQUEST, code: fixed('OUTSIDE_WORKING_HOURS') },

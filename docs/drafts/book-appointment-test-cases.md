@@ -2,9 +2,9 @@
 
 Sources: `docs/DESIGN.md` including the recorded edge-case decisions (I-x = Invariant, A-x = Assumption, OQ-x = Open Question), `docs/adr/0001-tech-stack.md`.
 
-Scope: the Book Appointment operation only. Read-only operations (List Dealerships, List Service Types, Look Up Appointments) are not covered here.
+Scope: the Book Appointment operation (Rounds 1–4), the read-only operations (Round 5), the seed script (Round 6) and input length limits (Round 7).
 
-Domain and use-case tests assert domain exceptions; the HTTP status is the presentation-layer mapping and is asserted only in Rounds 3 and 4b.
+Domain and use-case tests assert domain exceptions; the HTTP status is the presentation-layer mapping and is asserted only in Rounds 4b, 4c, 5 and 6.
 
 Validation order (DESIGN.md, recorded): 1 input format 400 → 2 dealership/service type 404 → 3 time rules 400 → 4 plate/phone 409 → 5 skill 422 → 6 vehicle overlap 409 → 7 free bay 409 → 8 free technician 409.
 
