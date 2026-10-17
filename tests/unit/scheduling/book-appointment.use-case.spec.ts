@@ -637,21 +637,42 @@ describe('BookAppointmentUseCase — T2.21 validation order: the earlier step wi
 });
 
 describe('BookAppointmentUseCase — time rules', () => {
-  it('T2.22 the use case enforces past-start, working-hours and overnight-consent rules', async () => {
+  const setup = (): { world: World; serviceType: ServiceType } => {
     const world = new World();
     const dealership = world.dealership();
     const serviceType = world.serviceType(dealership, 120);
     world.bay(dealership, 'Bay 01');
     world.technician(dealership, 'Tech 01');
+    return { world, serviceType };
+  };
+
+  it('T2.22a a past startTime is rejected', async () => {
+    const { world, serviceType } = setup();
 
     // NOW is 2030-01-01
     await expect(world.book(serviceType, '2029-12-31T02:00:00Z')).rejects.toThrow(PastStartTimeException);
+  });
+
+  it('T2.22b a startTime at closeTime is outside working hours', async () => {
+    const { world, serviceType } = setup();
+
     // 17:00 local
     await expect(world.book(serviceType, '2030-01-15T10:00:00Z')).rejects.toThrow(OutsideWorkingHoursException);
+  });
+
+  it('T2.22c an overnight booking without consent is rejected', async () => {
+    const { world, serviceType } = setup();
+
     // 16:00 local + 120 min → 09:00 local next day
     await expect(world.book(serviceType, '2030-01-15T09:00:00Z')).rejects.toThrow(
       OvernightConsentRequiredException,
     );
+  });
+
+  it('T2.22d an overnight booking with consent is Confirmed', async () => {
+    const { world, serviceType } = setup();
+
+    // 16:00 local + 120 min → 09:00 local next day
     await expect(world.book(serviceType, '2030-01-15T09:00:00Z', { overnightConsent: true })).resolves.toMatchObject({
       status: 'Confirmed',
       endTime: new Date('2030-01-16T02:00:00Z'),
