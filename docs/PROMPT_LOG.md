@@ -110,3 +110,7 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 09:27 — Phase 4 — TDD Green Round 2 (happy path & allocation)
 
 /tdd-green Book appointment happy path & allocation (Round 2, T2.1–T2.9) -- allowed: src/modules/scheduling/application/book-appointment.use-case.ts, src/modules/scheduling/domain/working-hours.ts (add an exported helper only; do not change existing behavior)
+
+### 2026-10-17 09:31 — Phase 4 — TDD Red Round 2 (customer & vehicle resolution)
+
+/tdd-red Round 2, section "Customer & vehicle resolution" -- docs/drafts/book-appointment-test-cases.md -- note: T2.11 and T2.13 may already pass because the happy-path green reuses vehicles by plate; that is expected, keep them as written.

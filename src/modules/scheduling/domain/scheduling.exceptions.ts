@@ -22,3 +22,5 @@ export class OvernightConsentRequiredException extends Error {
 export class BayUnavailableException extends Error {}
 
 export class TechnicianUnavailableException extends Error {}
+
+export class PlatePhoneMismatchException extends Error {}

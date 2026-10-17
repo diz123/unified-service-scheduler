@@ -11,6 +11,7 @@ import {
 } from '../../../src/modules/scheduling/domain/entities';
 import {
   BayUnavailableException,
+  PlatePhoneMismatchException,
   TechnicianUnavailableException,
 } from '../../../src/modules/scheduling/domain/scheduling.exceptions';
 import { InMemoryBookingStore } from './fakes/in-memory-booking-store';
@@ -70,9 +71,9 @@ class World {
     return technician;
   }
 
-  vehicle(licensePlate: string, phone = '0901234567'): Vehicle {
+  vehicle(licensePlate: string, phone = '0901234567', details: Pick<Vehicle, 'make' | 'model'> = {}): Vehicle {
     const customer = { id: this.store.nextId('customer'), name: 'Existing Owner', phone };
-    const vehicle = { id: this.store.nextId('vehicle'), customerId: customer.id, licensePlate };
+    const vehicle = { id: this.store.nextId('vehicle'), customerId: customer.id, licensePlate, ...details };
     this.store.customers.push(customer);
     this.store.vehicles.push(vehicle);
     return vehicle;
@@ -327,5 +328,110 @@ describe('BookAppointmentUseCase — happy path & allocation', () => {
     // No appointment was created with Dealership B's resources
     expect(baysFull.world.store.appointments).toHaveLength(1);
     expect(techsFull.world.store.appointments).toHaveLength(1);
+  });
+});
+
+describe('BookAppointmentUseCase — customer & vehicle resolution', () => {
+  const setup = (): { world: World; serviceType: ServiceType } => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership);
+    world.bay(dealership, 'Bay 01');
+    world.technician(dealership, 'Tech 01');
+    return { world, serviceType };
+  };
+  // 09:00 local
+  const SLOT = '2030-01-15T02:00:00Z';
+
+  it('T2.10 a new plate creates the customer and the vehicle, then books', async () => {
+    const { world, serviceType } = setup();
+
+    const appointment = await world.book(serviceType, SLOT, {
+      name: 'Tran Thi B',
+      phone: '0912345678',
+      licensePlate: '30e-456.78',
+      make: 'Toyota',
+      model: 'Vios',
+    });
+
+    expect(world.store.customers).toEqual([{ id: appointment.customerId, name: 'Tran Thi B', phone: '0912345678' }]);
+    expect(world.store.vehicles).toEqual([
+      {
+        id: appointment.vehicleId,
+        customerId: appointment.customerId,
+        licensePlate: '30E45678',
+        make: 'Toyota',
+        model: 'Vios',
+      },
+    ]);
+    expect(appointment.status).toBe('Confirmed');
+  });
+
+  it('T2.11 an existing plate with a matching phone reuses the vehicle and owner without overwriting the name', async () => {
+    const { world, serviceType } = setup();
+    const vehicle = world.vehicle('51A12345', '0901234567');
+
+    const appointment = await world.book(serviceType, SLOT, {
+      name: 'Someone Else',
+      phone: '0901234567',
+      licensePlate: '51A12345',
+    });
+
+    expect(appointment).toMatchObject({ vehicleId: vehicle.id, customerId: vehicle.customerId });
+    expect(world.store.customers).toEqual([{ id: vehicle.customerId, name: 'Existing Owner', phone: '0901234567' }]);
+    expect(world.store.vehicles).toHaveLength(1);
+  });
+
+  it('T2.12 an existing plate with a different phone is rejected and nothing is created or changed', async () => {
+    const { world, serviceType } = setup();
+    world.vehicle('51A12345', '0901234567');
+    const customersBefore = structuredClone(world.store.customers);
+    const vehiclesBefore = structuredClone(world.store.vehicles);
+
+    await expect(
+      world.book(serviceType, SLOT, { phone: '0999999999', licensePlate: '51A12345' }),
+    ).rejects.toThrow(PlatePhoneMismatchException);
+
+    expect(world.store.customers).toEqual(customersBefore);
+    expect(world.store.vehicles).toEqual(vehiclesBefore);
+    expect(world.store.appointments).toHaveLength(0);
+  });
+
+  it('T2.13 the plate lookup uses the normalized plate', async () => {
+    const { world, serviceType } = setup();
+    const vehicle = world.vehicle('51A12345', '0901234567');
+
+    const appointment = await world.book(serviceType, SLOT, { phone: '0901234567', licensePlate: '51a-123.45' });
+
+    expect(appointment.vehicleId).toBe(vehicle.id);
+    expect(world.store.vehicles).toHaveLength(1);
+  });
+
+  it('T2.14 an existing plate keeps its stored make and model', async () => {
+    const { world, serviceType } = setup();
+    const vehicle = world.vehicle('51A12345', '0901234567', { make: 'Toyota', model: 'Vios' });
+
+    await world.book(serviceType, SLOT, {
+      phone: '0901234567',
+      licensePlate: '51A12345',
+      make: 'Honda',
+      model: 'City',
+    });
+
+    expect(world.store.vehicles).toEqual([{ ...vehicle, make: 'Toyota', model: 'Vios' }]);
+  });
+
+  it('T2.15 phones are compared exactly after removing spaces, without country-code normalization', async () => {
+    const matching = setup();
+    const vehicle = matching.world.vehicle('51A12345', '0901234567');
+    await expect(
+      matching.world.book(matching.serviceType, SLOT, { phone: '090 123 4567', licensePlate: '51A12345' }),
+    ).resolves.toMatchObject({ vehicleId: vehicle.id });
+
+    const countryCode = setup();
+    countryCode.world.vehicle('51A12345', '0901234567');
+    await expect(
+      countryCode.world.book(countryCode.serviceType, SLOT, { phone: '+84901234567', licensePlate: '51A12345' }),
+    ).rejects.toThrow(PlatePhoneMismatchException);
   });
 });
