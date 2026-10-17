@@ -2,6 +2,8 @@
 
 **Status**: Accepted
 
+**Amended**: 2026-10-17 — Layer 1 first lock changed from the Vehicle row to a plate advisory lock, so concurrent first bookings for the same new plate are serialised (DESIGN.md, Customer and vehicle resolution).
+
 ---
 
 ## Context
@@ -28,15 +30,16 @@ The MVP scope is a single operation: `Book Appointment`. Stack complexity must b
 
 Two-layer defence against double-booking:
 
-- **Layer 1 — Application-level serialisation under contention**: An interactive transaction at READ COMMITTED issues `SELECT … FOR UPDATE` in a fixed order — Vehicle row first, then Dealership row — before running availability and allocation queries. READ COMMITTED re-snapshots on each statement, so the availability query sees all bookings committed by any concurrent transaction that holds or just released the same locks. Fixed lock order prevents deadlocks (see lock-order reasoning below).
+- **Layer 1 — Application-level serialisation under contention**: An interactive transaction at READ COMMITTED acquires two locks in a fixed order before running resolution, availability, and allocation queries: first a transaction-scoped advisory lock on the normalized license plate (`pg_advisory_xact_lock(<bigint key>)`, where the key is a stable 64-bit hash of the normalized plate computed in the infrastructure adapter), then the Dealership row via `SELECT … FOR UPDATE`. The plate lock works whether or not the vehicle row exists yet, so concurrent first bookings for the same new plate run one after the other: the second sees the committed customer and vehicle, or nothing if the first rolled back. READ COMMITTED re-snapshots on each statement, so the queries see all bookings committed by any concurrent transaction that holds or just released the same locks. Fixed lock order prevents deadlocks (see lock-order reasoning below). The unique constraint on the normalized `licensePlate` stays as a backstop; a 23505 on it indicates a Layer 1 bug.
 
 - **Layer 2 — Database-enforced backstop**: `btree_gist` extension with partial `EXCLUDE USING gist` constraints on `tstzrange("startTime", "endTime", '[)') WHERE ("status" = 'Confirmed')` for `("serviceBayId", …)`, `("technicianId", …)`, and `("vehicleId", …)`. `startTime` / `endTime` are `timestamptz` columns, so ranges are UTC-native (I-4). Each constraint has an explicit name (`appointment_bay_no_overlap`, `appointment_technician_no_overlap`, `appointment_vehicle_no_overlap`). Any overlapping `Confirmed` appointment is physically rejected with SQLSTATE `23P01`; the infrastructure adapter maps each constraint name to the corresponding domain exception (409).
 
-**Lock-order deadlock proof (Challenge A)**: Each booking transaction acquires exactly one Vehicle row lock, then exactly one Dealership row lock — always in that order.
+**Lock-order deadlock proof (Challenge A)**: Each booking transaction acquires exactly one plate advisory lock, then exactly one Dealership row lock — always in that order. Both are released at commit or rollback.
 
-- Same vehicle, different dealerships: both transactions compete for the same Vehicle lock. One proceeds; the other blocks. No second lock is acquired until the first is released. No cycle possible.
-- Different vehicles, same dealership: both transactions acquire their respective Vehicle locks immediately (no contention), then compete for the same Dealership lock. One proceeds; the other blocks. No cycle possible.
-- Deadlock requires two transactions holding a lock the other needs, acquired in opposite order. The fixed Vehicle → Dealership order rules this out in all cases.
+- Same plate (new or existing), different dealerships: both transactions compete for the same plate lock. One proceeds; the other blocks. No second lock is acquired until the first is released. No cycle possible.
+- Different plates, same dealership: both transactions acquire their respective plate locks immediately (no contention), then compete for the same Dealership lock. One proceeds; the other blocks. No cycle possible.
+- Hash collision between two different plates: those transactions are serialised as if they shared a plate. This costs throughput only, never correctness, and cannot create a cycle because the order is unchanged.
+- Deadlock requires two transactions holding a lock the other needs, acquired in opposite order. The fixed plate → Dealership order rules this out in all cases.
 
 **SQLite — rejected.**
 
@@ -104,7 +107,7 @@ Prisma does not natively express `EXCLUDE USING gist` constraints in `schema.pri
 ### Positive
 
 - PostgreSQL Layer 2 (`EXCLUDE USING gist`) physically enforces I-3 regardless of application bugs; correctness does not rest on application logic alone.
-- Fixed lock order (Vehicle → Dealership) eliminates the deadlock class described in Challenge A without optimistic-retry complexity.
+- Fixed lock order (plate advisory lock → Dealership row) eliminates the deadlock class described in Challenge A without optimistic-retry complexity, and covers vehicles that do not exist yet.
 - NestJS `useFactory` wiring keeps `domain/` and `application/` 100% framework-free; the architecture satisfies CLAUDE.md §7 layer boundary rules.
 - `docker compose up --build` brings up the full stack (DB + migrations + seed + API); reviewer setup requires only Docker.
 

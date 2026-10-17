@@ -79,7 +79,7 @@ Note: the order inside step 3 (past, working hours, overnight consent) all retur
 
 File: `tests/integration/scheduling/book-appointment.integration.spec.ts` — run with `pnpm test:integration`.
 
-Preconditions: Prisma pool size ≥ N (ADR-0001). Every concurrent request uses a distinct `licensePlate` unless the case says otherwise; a shared vehicle would hit the Vehicle lock / I-10 and mask the bay/technician race.
+Preconditions: Prisma pool size ≥ N (ADR-0001). Every concurrent request uses a distinct `licensePlate` unless the case says otherwise; a shared vehicle would hit the plate lock / I-10 and mask the bay/technician race.
 
 - T3.1 [I-2] Back-to-back at 10:00 through the real query and constraint → 201.
 - T3.2 [I-2] A seeded overlapping `Cancelled` appointment does not block → 201.
