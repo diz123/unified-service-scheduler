@@ -49,11 +49,11 @@ Allowed: `frontend/lib/error-messages.ts`, `frontend/lib/payloads.ts`, and `fron
 
 Signatures: `parseErrorBody(status: number, body: unknown): ApiError` and `toUserMessage(error: ApiError): { message: string; details: string[] }`.
 
-- F2.1 [FD-1, Rejection responses] Every code returns a non-empty message, table-driven over all 16: `VALIDATION_FAILED`, `START_TIME_IN_PAST`, `OUTSIDE_WORKING_HOURS`, `OVERNIGHT_CONSENT_REQUIRED`, `DEALERSHIP_NOT_FOUND`, `SERVICE_TYPE_NOT_FOUND`, `PLATE_PHONE_MISMATCH`, `NO_QUALIFIED_TECHNICIAN`, `VEHICLE_UNAVAILABLE`, `BAY_UNAVAILABLE`, `TECHNICIAN_UNAVAILABLE`, `SERVICE_BUSY`, `APPOINTMENTS_NOT_FOUND`, `ROUTE_NOT_FOUND`, `REQUEST_REJECTED`, `INTERNAL_ERROR`.
+- F2.1 [FD-1, Rejection responses] Every code returns a non-empty message, table-driven over all 16: `VALIDATION_FAILED`, `START_TIME_IN_PAST`, `OUTSIDE_WORKING_HOURS`, `OVERNIGHT_CONSENT_REQUIRED`, `DEALERSHIP_NOT_FOUND`, `SERVICE_TYPE_NOT_FOUND`, `PLATE_PHONE_MISMATCH`, `NO_QUALIFIED_TECHNICIAN`, `VEHICLE_UNAVAILABLE`, `BAY_UNAVAILABLE`, `TECHNICIAN_UNAVAILABLE`, `SERVICE_BUSY`, `APPOINTMENTS_NOT_FOUND`, `ROUTE_NOT_FOUND`, `REQUEST_REJECTED`, `INTERNAL_ERROR`. Every code except `ROUTE_NOT_FOUND`, `REQUEST_REJECTED` and `INTERNAL_ERROR` returns a message different from the generic fallback; those three return exactly the generic text.
 - F2.2 [Error response format] The shown message comes from the frontend table, never from the API `message`: a body with `message: 'debug-text-xyz'` → result does not contain `debug-text-xyz`.
 - F2.3 Unknown code (`SOMETHING_NEW`) or a body without `code` → the generic fallback message.
 - F2.4 [Error response format] `VALIDATION_FAILED` with `details: ['phone must ...', 'name must ...']` → `details` returned in order; without `details` (A-14, malformed JSON) → `details` is `[]`.
-- F2.5 [FD-3] Non-JSON body (e.g. an HTML string), `null` body, or a body that is not an object → the "cannot reach" message, not the generic fallback.
+- F2.5 [FD-3] Non-JSON body (e.g. an HTML string), `null` body, a body that is not an object, or an array body → the "cannot reach" message, not the generic fallback.
 - F2.6 [Rejection responses] `SERVICE_BUSY` message tells the customer to try again (retryable 503).
 - F2.7 [Look Up Appointments] `APPOINTMENTS_NOT_FOUND` message does not say whether the plate exists (the API gives the same body for unknown plate and plate/phone mismatch): it names neither "plate" nor "phone" as the wrong field.
 

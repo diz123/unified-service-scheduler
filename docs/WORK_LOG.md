@@ -93,3 +93,5 @@
 | 2026-10-17 19:51 | Record FD-1 to FD-3 | Engineer | Frontend messages per code; API-unreachable message; lookup times in dealership local time | docs/DESIGN.md |
 | 2026-10-17 20:04 | Round F1 local time and UTC | AI | Red 28 failing; gate PASS; toUtcIso + formatLocal (copy of backend offset technique); verify pass (frontend 28/28); review PASS | frontend/lib/local-time.ts, frontend/tests/unit/local-time.spec.ts |
 | 2026-10-17 21:13 | Record frontend generic fallback | Engineer | Unknown or missing code → "Something went wrong. Please try again."; API message never shown | docs/DESIGN.md |
+| 2026-10-17 21:35 | Round F2 error mapping and payloads | AI | Gate FAIL then PASS (exact BAY/TECH text, Tokyo row); Green 71/71; verify pass; review FAIL (1 Important: 11 per-code texts untested); stopped | frontend/lib/error-messages.ts, frontend/lib/payloads.ts, 2 spec files |
+| 2026-10-17 21:46 | Round F2 fix (a) plus array | Engineer | F2.1: 13 codes not generic, 3 exactly generic; F2.5 array row; draft updated; verify pass (frontend 88/88); re-review PASS | frontend/tests/unit/error-messages.spec.ts, docs/drafts/frontend-test-cases.md |

@@ -367,3 +367,7 @@ Then run pnpm test:integration and pnpm verify. Re-review once; do not stop for 
 ### 2026-10-17 21:13 — Phase 4 — Record frontend generic fallback
 
 /spec-record "Frontend handling" (under Rejection responses) -- Add one [Resolved] decision after "Frontend messages": Generic fallback — an error body with an unknown code or no code shows "Something went wrong. Please try again."; the API `message` is never shown.
+
+### 2026-10-17 21:17 — Phase 4 — TDD Round F2 error mapping and request payloads
+
+/tdd-round Round F2 -- docs/drafts/frontend-test-cases.md
