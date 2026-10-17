@@ -351,3 +351,7 @@ Then run pnpm test:integration and pnpm verify. Re-review once; do not stop for 
 ### 2026-10-17 18:50 — Phase 4 — ADR-0002 frontend stack (evaluation filled)
 
 /adr 0002-frontend-stack -- docs/drafts/frontend-stack-eval.md
+
+### 2026-10-17 19:16 — Phase 4 — Scaffold frontend per ADR-0002
+
+/scaffold 0002-frontend-stack -- frontend/ -- docs/drafts/frontend-scaffold-tree.md

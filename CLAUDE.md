@@ -9,7 +9,8 @@
 - **Project**: Keyloop Technical Assessment — Scenario A: The Unified Service Scheduler.
 - **Role**: Act as a Senior Fullstack Engineer & Software Architect collaborating with the human Tech Lead.
 - **Stack**: TypeScript (strict) · NestJS · PostgreSQL · Prisma ORM 7 · pnpm
-- **Decision record**: [ADR-0001](docs/adr/0001-tech-stack.md) — Accepted.
+- **Frontend stack**: Next.js 16 (App Router) · React 19 · TypeScript (strict) · Jest (`next/jest`) — `frontend/` pnpm workspace package, calling the API through Next.js `rewrites`.
+- **Decision records**: [ADR-0001](docs/adr/0001-tech-stack.md) (backend) — Accepted; [ADR-0002](docs/adr/0002-frontend-stack.md) (frontend) — Accepted.
 - **Architecture**: Layered / Clean Architecture per module-first layout (`src/modules/<module>/` containing `domain/`, `application/`, `infrastructure/`, `presentation/`).
 
 ---
@@ -74,6 +75,9 @@ The ADR MUST state explicitly which criteria were traded off against each other.
 - Integration & Concurrency Tests: `pnpm test:integration`
 - Typecheck: `pnpm typecheck`
 - Lint: `pnpm lint`
+- Full check (backend + frontend): `pnpm verify`
+- Frontend dev server (port 3001, API on 3000): `pnpm --filter frontend dev`
+- Frontend tests / typecheck / lint / build: `pnpm --filter frontend test` · `pnpm --filter frontend typecheck` · `pnpm --filter frontend lint` · `pnpm --filter frontend build`
 
 ---
 

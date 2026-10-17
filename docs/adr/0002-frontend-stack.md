@@ -85,7 +85,19 @@ DESIGN.md Target Deliverables includes a booking frontend: one page to book an a
 
 **Version policy**: as ADR-0001 — the latest stable release of every dependency as of the frontend scaffold, verified against official docs. No pre-releases. Exact versions are pinned in `pnpm-lock.yaml` and recorded in this ADR when the frontend is scaffolded.
 
-**Pinned versions**: recorded here at the frontend scaffold.
+**Pinned versions** (frontend scaffold — 2026-10-17):
+
+| Dependency / Tool | Pinned version |
+|---|---|
+| Next.js (`next`) | 16.4.2 — requires Node >=20.9.0 and TypeScript >=5.1.0 (Next.js docs, Version 16 upgrade guide); builds with TypeScript 6.0.3 |
+| React (`react`, `react-dom`) | 19.3.1 |
+| `@types/react`, `@types/react-dom` | 19.3.0 / 19.3.0 |
+| TypeScript, `@types/node` | 6.0.3 / 24.19.2 — same pins as ADR-0001 |
+| Jest, `@types/jest` | 30.5.2 / 30.0.0 — same pins as ADR-0001; TypeScript compiled by `next/jest` (bundled with `next`, SWC), no `ts-jest` |
+| ESLint / typescript-eslint | 10.12.0 / 8.71.2 — same pins as ADR-0001 |
+| `@next/eslint-plugin-next` | 16.4.2 — used directly (Next.js docs, ESLint "Using the plugin directly"); `eslint-config-next` is not used because its `eslint-plugin-react` 7.37.5, `eslint-plugin-import` 2.32.0 and `eslint-plugin-jsx-a11y` 6.10.2 declare ESLint peers up to `^9` only, so the frontend has no react, import or jsx-a11y lint rules |
+| `eslint-plugin-react-hooks` | 7.1.1 — declares ESLint `^10.0.0` support |
+| `allowBuilds` | No new entries: `sharp` 0.35.5 and the `@next/swc-*` binaries declare no install scripts; `pnpm install` requested no build approval |
 
 **Compatibility checks at scaffold time** (verify against official docs before pinning):
 

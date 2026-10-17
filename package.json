@@ -15,7 +15,7 @@
     "test:integration": "node scripts/test-integration.mjs",
     "lint": "eslint .",
     "db:seed": "tsc prisma/seed.ts --ignoreConfig --outDir dist/seed --rootDir . --module commonjs --target ES2021 --strict --skipLibCheck --types node && node dist/seed/prisma/seed.js",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm prisma validate && pnpm build"
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm prisma validate && pnpm build && pnpm --filter frontend typecheck && pnpm --filter frontend lint && pnpm --filter frontend test && pnpm --filter frontend build"
   },
   "dependencies": {
     "@nestjs/common": "12.1.3",
