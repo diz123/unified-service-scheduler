@@ -27,3 +27,4 @@
 | 2026-10-17 08:31 | /tdd-green Round 1 working-hours & time rules | AI | Intl-based tz conversion, no new deps; 12/12 green; pnpm verify passes | src/modules/scheduling/domain/working-hours.ts |
 | 2026-10-17 08:37 | /tdd-refactor Round 1 formatter cache + exception names | AI | One Intl formatter per timezone (Map cache); exceptions set name + default message; 12/12 green | src/modules/scheduling/domain/working-hours.ts, src/modules/scheduling/domain/scheduling.exceptions.ts |
 | 2026-10-17 08:45 | /tdd-red Round 1b license plate normalization | AI | T1.13–T1.14 red on Not implemented; normalizeLicensePlate stub | tests/unit/scheduling/license-plate.spec.ts, src/modules/scheduling/domain/license-plate.ts |
+| 2026-10-17 08:54 | /tdd-green Round 1b license plate normalization | AI | Remove spaces, - and . then uppercase; 14/14 green | src/modules/scheduling/domain/license-plate.ts |

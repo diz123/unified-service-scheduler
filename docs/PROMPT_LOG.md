@@ -98,3 +98,7 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 08:45 — Phase 4 — TDD Red Round 1b (license plate normalization)
 
 /tdd-red Round 1b -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 08:54 — Phase 4 — TDD Green Round 1b (license plate normalization)
+
+/tdd-green License plate normalization (Round 1b) -- allowed: src/modules/scheduling/domain/license-plate.ts
