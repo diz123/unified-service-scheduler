@@ -1,10 +1,16 @@
 import { Appointment, Technician } from '../domain/entities';
 import { normalizeLicensePlate } from '../domain/license-plate';
-import { BayUnavailableException, TechnicianUnavailableException } from '../domain/scheduling.exceptions';
+import {
+  BayUnavailableException,
+  PlatePhoneMismatchException,
+  TechnicianUnavailableException,
+} from '../domain/scheduling.exceptions';
 import { computeServiceWindow, localDayRange } from '../domain/working-hours';
 import { BookAppointmentCommand } from './commands/book-appointment.command';
 import { BookingTransaction, BookingUnitOfWork } from './ports/booking-unit-of-work.port';
 import { Clock } from './ports/clock.port';
+
+const withoutSpaces = (phone: string): string => phone.replace(/ /g, '');
 
 const byName = (a: { name: string }, b: { name: string }): number => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
 
@@ -27,6 +33,11 @@ export class BookAppointmentUseCase {
       throw new Error('Dealership or service type not found');
     }
 
+    const existing = await tx.findVehicleByPlate(licensePlate);
+    if (existing && withoutSpaces(existing.owner.phone) !== withoutSpaces(command.phone)) {
+      throw new PlatePhoneMismatchException();
+    }
+
     const startTime = command.startTime;
     const { endTime } = computeServiceWindow(startTime, serviceType.durationMinutes, dealership);
     const overlapping = await tx.findConfirmedAppointments({ from: startTime, to: endTime, dealershipId: dealership.id });
@@ -47,7 +58,6 @@ export class BookAppointmentUseCase {
     const technician = await this.leastLoaded(tx, freeTechnicians, startTime, dealership.id, dealership.timezone);
 
     // Customers and vehicles are created only after allocation succeeds, so a rejected booking creates nothing.
-    const existing = await tx.findVehicleByPlate(licensePlate);
     const vehicle =
       existing?.vehicle ??
       (await tx.createVehicle({
