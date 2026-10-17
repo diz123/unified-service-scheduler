@@ -94,6 +94,7 @@ The ADR MUST state explicitly which criteria were traded off against each other.
   | Input validation errors                                           | 400 Bad Request          |
   | `PastStartTimeException`, `OutsideWorkingHoursException`, `OvernightConsentRequiredException` | 400 Bad Request |
   | `ResourceNotFoundException` (dealership, service type)            | 404 Not Found            |
+  | `TransactionTimeoutException` (Prisma P2028, lock wait exhausted) | 503 Service Unavailable |
 
 - **YAGNI & Simplicity**: Keep the design focused on the core service layer. No distributed-systems complexity unless strictly required.
 
