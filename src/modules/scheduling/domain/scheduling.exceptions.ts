@@ -72,3 +72,11 @@ export class TransactionTimeoutException extends Error {
     this.name = 'TransactionTimeoutException';
   }
 }
+
+/** Look Up Appointments found no match; an unknown plate and a phone mismatch are indistinguishable. */
+export class AppointmentsNotFoundException extends Error {
+  constructor(message = 'No appointments found for this license plate and phone') {
+    super(message);
+    this.name = 'AppointmentsNotFoundException';
+  }
+}

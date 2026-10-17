@@ -4,14 +4,18 @@ import { createPrismaClient } from '../../shared/infrastructure/database/prisma-
 import { BookAppointmentUseCase } from './application/book-appointment.use-case';
 import { BookingUnitOfWork } from './application/ports/booking-unit-of-work.port';
 import { Clock } from './application/ports/clock.port';
+import { SchedulingReadModel } from './application/ports/scheduling-read-model.port';
+import { SchedulingQueries } from './application/scheduling-queries';
 import { PrismaBookingUnitOfWork } from './infrastructure/database/prisma-booking-unit-of-work';
+import { PrismaSchedulingReadModel } from './infrastructure/database/prisma-scheduling-read-model';
 import { AppointmentsController } from './presentation/appointments.controller';
-import { BOOKING_UNIT_OF_WORK, CLOCK, PRISMA_CLIENT } from './scheduling.tokens';
+import { DealershipsController } from './presentation/dealerships.controller';
+import { BOOKING_UNIT_OF_WORK, CLOCK, PRISMA_CLIENT, SCHEDULING_READ_MODEL } from './scheduling.tokens';
 
 const systemClock: Clock = { now: () => new Date() };
 
 @Module({
-  controllers: [AppointmentsController],
+  controllers: [AppointmentsController, DealershipsController],
   providers: [
     { provide: PRISMA_CLIENT, useFactory: createPrismaClient },
     {
@@ -20,6 +24,16 @@ const systemClock: Clock = { now: () => new Date() };
       inject: [PRISMA_CLIENT],
     },
     { provide: CLOCK, useValue: systemClock },
+    {
+      provide: SCHEDULING_READ_MODEL,
+      useFactory: (prisma: PrismaClient): SchedulingReadModel => new PrismaSchedulingReadModel(prisma),
+      inject: [PRISMA_CLIENT],
+    },
+    {
+      provide: SchedulingQueries,
+      useFactory: (readModel: SchedulingReadModel): SchedulingQueries => new SchedulingQueries(readModel),
+      inject: [SCHEDULING_READ_MODEL],
+    },
     {
       provide: BookAppointmentUseCase,
       useFactory: (unitOfWork: BookingUnitOfWork, clock: Clock): BookAppointmentUseCase =>

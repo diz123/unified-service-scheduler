@@ -1,5 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
 import {
+  AppointmentsNotFoundException,
   BayUnavailableException,
   OutsideWorkingHoursException,
   OvernightConsentRequiredException,
@@ -46,6 +47,7 @@ const MAPPINGS: readonly ErrorMapping[] = [
   { type: BayUnavailableException, status: HttpStatus.CONFLICT, code: fixed('BAY_UNAVAILABLE') },
   { type: TechnicianUnavailableException, status: HttpStatus.CONFLICT, code: fixed('TECHNICIAN_UNAVAILABLE') },
   { type: TransactionTimeoutException, status: HttpStatus.SERVICE_UNAVAILABLE, code: fixed('SERVICE_BUSY') },
+  { type: AppointmentsNotFoundException, status: HttpStatus.NOT_FOUND, code: fixed('APPOINTMENTS_NOT_FOUND') },
 ];
 
 interface JsonResponse {

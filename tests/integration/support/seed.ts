@@ -8,11 +8,12 @@ export async function insertDealership(
   openTime = '08:00',
   closeTime = '17:00',
   timezone = 'Asia/Ho_Chi_Minh',
+  name?: string,
 ): Promise<string> {
   const id = randomUUID();
   await prisma.$executeRaw`
     INSERT INTO "Dealership" ("id", "name", "openTime", "closeTime", "timezone")
-    VALUES (${id}, ${`Dealership ${id}`}, ${openTime}, ${closeTime}, ${timezone})`;
+    VALUES (${id}, ${name ?? `Dealership ${id}`}, ${openTime}, ${closeTime}, ${timezone})`;
   return id;
 }
 
@@ -20,11 +21,12 @@ export async function insertServiceType(
   prisma: PrismaClient,
   dealershipId: string,
   durationMinutes = 60,
+  name = 'Oil change',
 ): Promise<string> {
   const id = randomUUID();
   await prisma.$executeRaw`
     INSERT INTO "ServiceType" ("id", "dealershipId", "name", "requiredSkill", "durationMinutes")
-    VALUES (${id}, ${dealershipId}, 'Oil change', 'Maintenance', ${durationMinutes})`;
+    VALUES (${id}, ${dealershipId}, ${name}, 'Maintenance', ${durationMinutes})`;
   return id;
 }
 

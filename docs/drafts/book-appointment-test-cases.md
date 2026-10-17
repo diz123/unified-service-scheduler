@@ -185,3 +185,5 @@ Allowed: `src/modules/scheduling/**`, `tests/integration/support/**`.
 - T5.8 Unknown plate → 404, `code: APPOINTMENTS_NOT_FOUND`.
 - T5.9 Known plate with a different phone → 404 with a body deep-equal to T5.8's (no enumeration).
 - T5.10 Lookup body invalid (missing `phone`; blank `licensePlate`) → 400, `code: VALIDATION_FAILED`, with `details`.
+- T5.11 Lookup compares phones like Book Appointment (spaces removed): stored phone `0901234567`, request `"090 123 4567"` → 200 with the appointments.
+- T5.12 Mirror of T5.11: book via `POST /appointments` with phone `"090 123 4567"`, then look up with `0901234567` → 200 with that appointment (the stored phone is normalized too).

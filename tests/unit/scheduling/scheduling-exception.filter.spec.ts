@@ -1,5 +1,6 @@
 import { ArgumentsHost } from '@nestjs/common';
 import {
+  AppointmentsNotFoundException,
   BayUnavailableException,
   OutsideWorkingHoursException,
   OvernightConsentRequiredException,
@@ -68,6 +69,7 @@ const TABLE: ReadonlyArray<[string, number, string, () => Error]> = [
     () => new ResourceNotFoundException('serviceType'),
   ],
   ['TransactionTimeoutException', 503, 'SERVICE_BUSY', () => new TransactionTimeoutException()],
+  ['AppointmentsNotFoundException', 404, 'APPOINTMENTS_NOT_FOUND', () => new AppointmentsNotFoundException()],
 ];
 
 describe('SchedulingExceptionFilter — status and error code per exception (T4.8)', () => {

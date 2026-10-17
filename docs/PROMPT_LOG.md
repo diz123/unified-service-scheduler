@@ -256,3 +256,17 @@ Read-Only Operations [Resolved], add HTTP details:
 2. List Service Types: GET /dealerships/:dealershipId/service-types → 200, array sorted by name; each item: id, name, durationMinutes (requiredSkill is not exposed). Unknown dealership → 404 DEALERSHIP_NOT_FOUND.
 3. Look Up Appointments: POST /appointments/lookup with body { licensePlate, phone } — POST so the phone never appears in a URL or access log. Plate and phone are normalized and compared exactly as in Book Appointment. → 200, that vehicle's appointments in every status, newest startTime first; each item: id, startTime, endTime, status, dealership { id, name }, serviceType { id, name }. Unknown plate or plate/phone mismatch → 404 APPOINTMENTS_NOT_FOUND with an identical body. Invalid body → 400 VALIDATION_FAILED.
 4. Rejection table: add row "Look Up Appointments finds no match" → 404, APPOINTMENTS_NOT_FOUND.
+
+### 2026-10-17 15:25 — Phase 4 — TDD Round 5 (read-only operations)
+
+/tdd-round Round 5 -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 15:45 — Phase 4 — TDD Round 5 (T5.11, T4.8 row, CLAUDE.md §7, close)
+
+add T5.11 + T4.8 row. Add T5.11 to the Round 5 case list: stored phone 0901234567, request "090 123 4567" → 200 with the appointments.
+Also add the missing row to CLAUDE.md §7: AppointmentsNotFoundException → 404 Not Found (this message is my approval).
+After this re-review, close Round 5: report remaining Minor findings, but do not stop for them.
+
+### 2026-10-17 15:58 — Phase 4 — TDD Round 5 (T5.12 mirror)
+
+Before committing, add T5.12 (mirror of T5.11): book with phone "090 123 4567", then look up with "0901234567" → 200. Add it to the case list and mutation-check it by normalizing only the request side. No other changes.

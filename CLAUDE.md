@@ -95,6 +95,7 @@ The ADR MUST state explicitly which criteria were traded off against each other.
   | `PastStartTimeException`, `OutsideWorkingHoursException`, `OvernightConsentRequiredException` | 400 Bad Request |
   | `ResourceNotFoundException` (dealership, service type)            | 404 Not Found            |
   | `TransactionTimeoutException` (Prisma P2028, lock wait exhausted) | 503 Service Unavailable |
+  | `AppointmentsNotFoundException` (Look Up Appointments)            | 404 Not Found            |
 
 - **YAGNI & Simplicity**: Keep the design focused on the core service layer. No distributed-systems complexity unless strictly required.
 

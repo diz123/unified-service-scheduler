@@ -1,5 +1,6 @@
 import { Appointment, Technician } from '../domain/entities';
 import { normalizeLicensePlate } from '../domain/license-plate';
+import { normalizePhone } from '../domain/phone';
 import {
   BayUnavailableException,
   PlatePhoneMismatchException,
@@ -18,8 +19,6 @@ import {
 import { BookAppointmentCommand } from './commands/book-appointment.command';
 import { BookingTransaction, BookingUnitOfWork } from './ports/booking-unit-of-work.port';
 import { Clock } from './ports/clock.port';
-
-const withoutSpaces = (phone: string): string => phone.replace(/ /g, '');
 
 const byName = (a: { name: string }, b: { name: string }): number => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
 
@@ -52,7 +51,7 @@ export class BookAppointmentUseCase {
     const endTime = window.endTime;
 
     const existing = await tx.findVehicleByPlate(licensePlate);
-    if (existing && withoutSpaces(existing.owner.phone) !== withoutSpaces(command.phone)) {
+    if (existing && normalizePhone(existing.owner.phone) !== normalizePhone(command.phone)) {
       throw new PlatePhoneMismatchException();
     }
 
