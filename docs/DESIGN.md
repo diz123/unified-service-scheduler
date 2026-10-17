@@ -227,6 +227,8 @@ Other framework errors **[Resolved]**: any HTTP exception not covered by an exis
 
 **Frontend messages** **[Resolved]**: The frontend owns one English user-facing message per error `code`. Codes may share a message where the customer action is the same, e.g. `BAY_UNAVAILABLE` and `TECHNICIAN_UNAVAILABLE` → "This time is no longer available".
 
+**Generic fallback** **[Resolved]**: An error body with an unknown `code` or no `code` shows "Something went wrong. Please try again."; the API `message` is never shown.
+
 **API unreachable** **[Resolved]**: When the API is down (the proxy returns a non-JSON body or the request fails), the frontend shows its own message, "Cannot reach the booking service. Please try again.", distinct from the generic fallback.
 
 #### Validation order **[Resolved]**

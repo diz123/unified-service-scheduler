@@ -359,3 +359,11 @@ Then run pnpm test:integration and pnpm verify. Re-review once; do not stop for 
 ### 2026-10-17 19:51 — Phase 4 — Record frontend decisions FD-1 to FD-3
 
 /spec-record "Frontend handling" (under Rejection responses) and "Read-Only Operations for the Booking Frontend" -- Record only FD-1, FD-2 and FD-3 from docs/drafts/frontend-test-cases.md, section "Frontend decisions (agreed 2026-10-17)". FD-1 and FD-3 go under Frontend handling; FD-2 goes under Read-Only Operations, next to Look Up Appointments. Tag each [Resolved]. Do not record FD-4 or FD-5.
+
+### 2026-10-17 19:57 — Phase 4 — TDD Round F1 local time and UTC
+
+/tdd-round Round F1 -- docs/drafts/frontend-test-cases.md
+
+### 2026-10-17 21:13 — Phase 4 — Record frontend generic fallback
+
+/spec-record "Frontend handling" (under Rejection responses) -- Add one [Resolved] decision after "Frontend messages": Generic fallback — an error body with an unknown code or no code shows "Something went wrong. Please try again."; the API `message` is never shown.
