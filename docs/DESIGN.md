@@ -135,7 +135,7 @@ The assigned `ServiceBay` and `Technician` MUST belong to the same `Dealership` 
 
 ### I-9 — Past-Time Rejection **[Resolved]**
 
-A booking request with a `startTime` already in the past is rejected (HTTP 400).
+A booking request with a `startTime` already in the past is rejected (HTTP 400). Past means `startTime <= now` (server clock).
 
 ### I-10 — No Overlapping Vehicle Bookings **[Assumed]**
 
@@ -184,7 +184,11 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 
 - New plate → create the customer and the vehicle.
 - Existing plate with a matching phone → reuse the vehicle and its owner; the entered name does not overwrite the stored name.
-- Existing plate with a different phone → reject (409).
+- Existing plate with a different phone → reject (409), raising `PlatePhoneMismatchException`.
+- For an existing plate, `make` and `model` in the request do not overwrite the stored values.
+- A new customer and vehicle are saved only if the booking succeeds; a rejected booking creates nothing.
+- Phone numbers are compared exactly after removing spaces; no country-code normalization (`0901234567` and `+84901234567` are different).
+- Concurrent bookings with the same new plate behave as if run one after the other: one creates the customer and vehicle; the other is treated as an existing plate (matching phone → normal checks; different phone → 409). Never 500.
 
 **Success response** **[Assumed]**: The created `Appointment` including `id`, `startTime`, `endTime`, `status`, assigned `ServiceBay`, and assigned `Technician`.
 
@@ -203,13 +207,15 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 | Unknown `dealershipId` | 404 | **[Resolved]** |
 | Unknown `serviceTypeId`, or service type not offered by the dealership | 404 | **[Resolved]** |
 
+**Vehicle conflict** **[Resolved]**: a vehicle conflict raises `VehicleUnavailableException` → 409.
+
 **Frontend handling** **[Resolved]**: On rejection, the booking frontend shows the reason and keeps the form so the customer can pick another time.
 
 #### Validation order **[Resolved]**
 
 Checks run in this order and the first failure is returned:
 
-1. Input format (400).
+1. Input format (400). `startTime` must use the `Z` suffix (any other offset → 400) and be minute-aligned (seconds and milliseconds = 0, else 400).
 2. Dealership and service type exist and match (404).
 3. Time rules — past, outside working hours, overnight consent (400).
 4. Plate/phone match (409).
@@ -236,11 +242,11 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 
 1. **Auto-allocation** **[Assumed]** — Customers enter their vehicle (license plate) and select dealership, `ServiceType`, and desired time only. The system assigns `ServiceBay` and `Technician`; customers cannot specify them.
 
-2. **Technician allocation order** **[Resolved]** — Prefer the technician with the fewest confirmed appointments whose `[startTime, endTime)` interval overlaps the requested calendar date (in dealership local time; each appointment counts as 1). Ties broken by fixed order only.
+2. **Technician allocation order** **[Resolved]** — Prefer the technician with the fewest confirmed appointments whose `[startTime, endTime)` interval overlaps the requested calendar date (in dealership local time; each appointment counts as 1). Ties broken by fixed order only. The workload date is the local date of `startTime`; count `Confirmed` appointments whose interval overlaps `[00:00, 24:00)` local of that date. Fixed order = ascending by `name`; seed names are zero-padded (e.g. "Bay 01", "Bay 02") so text order matches numeric order.
 
-3. **Bay allocation order** **[Resolved]** — Fixed order only.
+3. **Bay allocation order** **[Resolved]** — Fixed order only. Fixed order = ascending by `name`; seed names are zero-padded (e.g. "Bay 01", "Bay 02") so text order matches numeric order.
 
-4. **Per-dealership operating hours** **[Resolved]** — Each `Dealership` stores `openTime`, `closeTime`, and `timezone`. All dealerships operate every day; closed days and holidays are next phase.
+4. **Per-dealership operating hours** **[Resolved]** — Each `Dealership` stores `openTime`, `closeTime`, and `timezone`. All dealerships operate every day; closed days and holidays are next phase. `openTime` < `closeTime` on the same local day; working hours never cross midnight. All dealerships are in Vietnam (no DST); DST handling is out of scope.
 
 5. **Scale** **[Assumed, not sourced]** — ~3–5 million registered vehicles across ~500 dealerships in Vietnam (~20 `ServiceBay`s, ~40 `Technician`s each). At 2–3 services per vehicle per year, that is ~16,000–41,000 bookings/day. Normal load ~1,000 concurrent users; seasonal or campaign peaks 5,000–10,000. Derived: booking writes average ~1.2/s and peak ~12/s; most concurrent users are reading availability, not writing. Contention is local to one dealership and time window, not global.
 

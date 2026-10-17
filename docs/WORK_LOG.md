@@ -21,3 +21,5 @@
 | 2026-10-17 02:48 | /spec-record customer/vehicle created at booking | Engineer | Plate+phone identify customer; seed = master data only; Look Up Appointments added; plate/phone mismatch 409 | docs/DESIGN.md |
 | 2026-10-17 02:52 | Resolve Non-goals conflict; tag and Assumption 1 wording | Engineer | Drop "(caller identity is known)" and "customer login"; Vehicle [Assumed + Resolved]; Assumption 1 says plate entered | docs/DESIGN.md |
 | 2026-10-17 03:03 | /spec-record I-13, 404s, validation order | Engineer | I-13 start within working hours (400); unknown dealership/service type 404; 8-step validation order | docs/DESIGN.md |
+| 2026-10-17 07:42 | /spec-record docs/drafts/spec-record-decisions.md | AI | Stopped: file marked NOT yet agreed; Q1–Q3 overlap/conflict with recorded spec; nothing recorded | docs/PROMPT_LOG.md, docs/WORK_LOG.md |
+| 2026-10-17 07:55 | /spec-record docs/drafts/spec-record-decisions.md (agreed Q4–Q16) | Engineer | Name-order allocation; workload date; Z + minute-aligned startTime; past = <= now; no midnight/DST; plate/phone rules; 2 exception names | docs/DESIGN.md |

@@ -12,7 +12,9 @@ disable-model-invocation: true
 $ARGUMENTS
 
 The input lists the sections to update and the decisions I agreed on.
-If either is missing, stop and ask. Do not infer decisions from earlier conversation that I did not restate here.
+If the input contains one or more file paths, read all of those files and treat their combined content as the input.
+If either part is missing, stop and ask. Do not infer decisions from earlier conversation that I did not restate here or in the given files.
+If a file marks any decision as not agreed, proposed, or `PENDING`, stop and list those decisions; record nothing until I confirm.
 
 ## Read first
 

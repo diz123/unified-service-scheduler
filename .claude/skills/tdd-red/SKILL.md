@@ -12,6 +12,8 @@ disable-model-invocation: true
 $ARGUMENTS
 
 Expected content: the feature or use case, the test cases I expect (normal, edge, conflict), and the test path.
+If the input contains one or more file paths, read all of those files and treat their combined content as the input.
+If a file covers more than one test path, use only the section I named (e.g. "Round 1"); if I did not name one, stop and ask.
 If any part is missing, stop and ask. Do not invent test cases I did not list; suggest extra ones as questions.
 
 ## Read first

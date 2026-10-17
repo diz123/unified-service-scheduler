@@ -74,3 +74,11 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 1. Invariants, add I-13 — Start Within Working Hours [Resolved]: a booking is rejected (400) when `startTime`, in the dealership's local time, is before `openTime` or at/after `closeTime`.
 2. API Contract, rejection responses [Resolved]: add "`startTime` outside working hours (I-13)" → 400; "Unknown `dealershipId`" → 404; "Unknown `serviceTypeId`, or service type not offered by the dealership" → 404.
 3. API Contract, add subsection "Validation order" [Resolved]: checks run in this order and the first failure is returned: (1) input format (400); (2) dealership and service type exist and match (404); (3) time rules — past, outside working hours, overnight consent (400); (4) plate/phone match (409); (5) a technician with the required skill exists (422); (6) vehicle has no overlapping booking (409); (7) a free service bay (409); (8) a free qualified technician (409).
+
+### 2026-10-17 07:42 — Phase 4 — Spec Record (draft decisions file)
+
+/spec-record docs/drafts/spec-record-decisions.md
+
+### 2026-10-17 07:55 — Phase 4 — Spec Record (Q4–Q16 from draft decisions file)
+
+/spec-record docs/drafts/spec-record-decisions.md

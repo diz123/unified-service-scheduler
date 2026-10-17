@@ -89,6 +89,7 @@ The ADR MUST state explicitly which criteria were traded off against each other.
   | Exception                                                         | HTTP                     |
   | ----------------------------------------------------------------- | ------------------------ |
   | `BayUnavailableException`, `TechnicianUnavailableException`       | 409 Conflict             |
+  | `VehicleUnavailableException`, `PlatePhoneMismatchException`      | 409 Conflict             |
   | `SkillMismatchException`                                          | 422 Unprocessable Entity |
   | Input validation errors                                           | 400 Bad Request          |
   | `ResourceNotFoundException` (customer, vehicle, dealership, etc.) | 404 Not Found            |
