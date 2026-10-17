@@ -279,3 +279,21 @@ Also record in DESIGN.md "Out of Scope for MVP → Next phase": rate limiting on
 ### 2026-10-17 16:34 — Phase 4 — TDD Round 6 (seed script)
 
 /tdd-round Round 6 -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 17:08 — Phase 4 — Backend close-out housekeeping
+
+**Phase**: 4 — Backend close-out
+**Task**: Housekeeping before the frontend phase.
+**Scope**:
+- In:
+  1. Separate test database: integration tests use DATABASE_URL_TEST (a second database in the same Postgres container, e.g. scheduler_test); migrations applied to it before tests; db:seed and the app keep using DATABASE_URL. Update .env.example keys accordingly (no secrets).
+  2. eslint.config.mjs: include prisma/**/*.ts.
+  3. ADR-0001: correct the seed note — the seed runs with `pnpm db:seed` on the host against the Dockerized database.
+- Out: No feature or behavior changes.
+**Done when**: pnpm verify and pnpm test:integration pass; running db:seed, then the integration tests, leaves the seeded data intact (show counts before and after). Reviewer PASS (stop only for Critical/Important).
+**Stop & ask if**: Any step needs a new dependency.
+
+### 2026-10-17 17:22 — Phase 4 — Backend close-out (five Minors)
+
+Env key added to .env and .env.example. Fix all five Minors: widen the ADR erratum to cover migrations, API and host prerequisites (Node, pnpm); compare parsed host, port and database name in both guards; log spawn errors in the runner; update the draft's DATABASE_URL precondition; add ignores ['dist/**'] to eslint.config.mjs.
+Then run pnpm test:integration and pnpm verify. Re-review once; do not stop for Minor findings.

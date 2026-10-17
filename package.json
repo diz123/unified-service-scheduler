@@ -12,7 +12,7 @@
     "start": "node dist/main",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=tests/unit --passWithNoTests",
-    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=tests/integration --runInBand --passWithNoTests",
+    "test:integration": "node scripts/test-integration.mjs",
     "lint": "eslint .",
     "db:seed": "tsc prisma/seed.ts --ignoreConfig --outDir dist/seed --rootDir . --module commonjs --target ES2021 --strict --skipLibCheck --types node && node dist/seed/prisma/seed.js",
     "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm prisma validate && pnpm build"

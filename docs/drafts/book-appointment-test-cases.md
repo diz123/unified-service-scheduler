@@ -83,8 +83,8 @@ Decision: Round 3 calls `BookAppointmentUseCase` with the real Prisma adapter. H
 
 Shared preconditions for 3a–3c:
 
-- `docker compose up -d` is healthy and `.env` holds `DATABASE_URL` (copy from `.env.example`).
-- Migrations are applied before the run. Tests truncate all tables before each test, so do not point `DATABASE_URL` at data you need.
+- `docker compose up -d` is healthy and `.env` holds `DATABASE_URL` and `DATABASE_URL_TEST` (copy from `.env.example`).
+- `pnpm test:integration` applies migrations to the `DATABASE_URL_TEST` database and runs the tests there. Tests truncate all tables before each test, so `DATABASE_URL_TEST` must not point at data you need; the dev data at `DATABASE_URL` is never touched.
 - Concurrency tests: Prisma pool size ≥ N (ADR-0001). Every concurrent request uses a distinct `licensePlate` unless the case says otherwise; a shared plate would hit the plate lock / I-10 and mask the bay/technician race.
 
 ## Round 3a — Schema & constraints
