@@ -297,3 +297,25 @@ Also record in DESIGN.md "Out of Scope for MVP → Next phase": rate limiting on
 
 Env key added to .env and .env.example. Fix all five Minors: widen the ADR erratum to cover migrations, API and host prerequisites (Node, pnpm); compare parsed host, port and database name in both guards; log spawn errors in the runner; update the draft's DATABASE_URL precondition; add ignores ['dist/**'] to eslint.config.mjs.
 Then run pnpm test:integration and pnpm verify. Re-review once; do not stop for Minor findings.
+
+### 2026-10-17 17:42 — Phase 4 — Code review of the MVP backend
+
+/code-review:code-review Review the whole MVP backend: e838e3d..HEAD
+
+### 2026-10-17 17:55 — Phase 4 — Ponytail review of the last commit
+
+/ponytail:ponytail-review
+
+### 2026-10-17 17:55 — Phase 4 — Security scan of the Claude Code config
+
+/security-scan
+
+### 2026-10-17 18:00 — Phase 4 — Security review of the backend
+
+/security-review
+
+### 2026-10-17 18:05 — Phase 4 — Record input lengths and dealership lock limitation
+
+/spec-record API Contract, Assumptions -- 
+1. API Contract, Book Appointment and Look Up Appointments inputs [Resolved]: maximum lengths, checked before normalization: name 100, phone 20, licensePlate 20, make 50, model 50. Longer → 400 VALIDATION_FAILED.
+2. Assumptions [Resolved], add: "Known limitation: the dealership row lock is held across the whole booking transaction (7–8 queries). Sufficient for the assumed ~12 bookings/s peak; revisit if per-dealership contention grows."

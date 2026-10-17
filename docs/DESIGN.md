@@ -180,6 +180,8 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 | `startTime` | ISO 8601 UTC | **[Given]** | Desired start time |
 | `overnightConsent` | boolean | **[Resolved]** | Optional, default `false`. Checked only when `endTime` falls on a later local date than `startTime`; booking rejected (400) if `false` in that case |
 
+**Input lengths** **[Resolved]**: Book Appointment and Look Up Appointments inputs have maximum lengths, checked before normalization: `name` 100, `phone` 20, `licensePlate` 20, `make` 50, `model` 50. Longer → 400 `VALIDATION_FAILED`.
+
 **Customer and vehicle resolution** **[Resolved]**:
 
 - New plate → create the customer and the vehicle.
@@ -286,6 +288,8 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 13. **startTime format** **[Resolved]** — `startTime` must include seconds (always `:00`) and at most 3 fraction digits; lowercase `z` is rejected.
 
 14. **Malformed JSON error body** **[Resolved]** — A malformed JSON body returns `VALIDATION_FAILED` without `details`, because no single field is invalid.
+
+15. **Dealership lock scope** **[Resolved]** — Known limitation: the dealership row lock is held across the whole booking transaction (7–8 queries). Sufficient for the assumed ~12 bookings/s peak; revisit if per-dealership contention grows.
 
 ---
 

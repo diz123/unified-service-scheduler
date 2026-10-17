@@ -79,3 +79,8 @@
 | 2026-10-17 17:12 | Backend close-out housekeeping | AI | Integration tests on DATABASE_URL_TEST via scripts/test-integration.mjs (migrate deploy creates scheduler_test); lint covers prisma/; ADR seed erratum; .env/.env.example left to engineer (blocked) | package.json, scripts/test-integration.mjs, tests/integration/support/database.ts, eslint.config.mjs, docs/adr/0001-tech-stack.md |
 | 2026-10-17 17:24 | Close-out Minors | Engineer | ADR erratum widened (compose = Postgres only; host runs migrations, seed, API; Node 24 + pnpm 11); parsed URL guards; spawn errors logged; draft precondition; eslint ignores dist/** | docs/adr/0001-tech-stack.md, scripts/test-integration.mjs, tests/integration/support/database.ts, docs/drafts/book-appointment-test-cases.md, eslint.config.mjs |
 | 2026-10-17 17:26 | Backend close-out re-review | AI | PASS; 2 Minors left (databaseKey untested and duplicated; scripts/ not linted) | none |
+| 2026-10-17 17:42 | Code review e838e3d..494ee34 | AI | 5 reviewers + 9 scored issues; none scored >= 80; no issues reported; not posted (no PR/remote) | none |
+| 2026-10-17 17:55 | Ponytail review of 494ee34 | AI | Ship; 1 Should-fix (runner guard has no test) | none |
+| 2026-10-17 17:55 | Security scan (AgentShield 1.6.0 via npx) | AI | Grade B 75/100; findings mostly generic agent prompt-defense checks; deny-rule additions recommended; no --fix run | none |
+| 2026-10-17 18:00 | Security review of backend | AI | No critical/high; 2 Medium (no max length on text fields; Postgres port on all interfaces); audit hits are dev/CLI-only | none |
+| 2026-10-17 18:05 | Record input lengths and lock limitation | Engineer | Max lengths (name 100, phone 20, plate 20, make 50, model 50) → 400; A-15 dealership lock scope | docs/DESIGN.md |
