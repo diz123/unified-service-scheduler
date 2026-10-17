@@ -40,8 +40,13 @@ export class PlatePhoneMismatchException extends Error {
   }
 }
 
+export type NotFoundResource = 'dealership' | 'serviceType';
+
 export class ResourceNotFoundException extends Error {
-  constructor(message = 'Dealership or service type not found') {
+  constructor(
+    readonly resource: NotFoundResource,
+    message = resource === 'dealership' ? 'Dealership not found' : 'Service type not found',
+  ) {
     super(message);
     this.name = 'ResourceNotFoundException';
   }

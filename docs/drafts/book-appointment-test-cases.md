@@ -153,7 +153,7 @@ File: `tests/integration/scheduling/book-appointment.http.spec.ts` — run with 
 
 File: `tests/integration/scheduling/book-appointment.http.spec.ts` — run with `pnpm test:integration`. T4.8 stays in `tests/unit/scheduling/scheduling-exception.filter.spec.ts`. Source of truth: DESIGN.md "Error response format" and the Code column of the rejection table.
 
-Allowed: `src/modules/scheduling/presentation/**`, `src/modules/scheduling/domain/scheduling.exceptions.ts`, `src/modules/scheduling/application/book-appointment.use-case.ts`, `src/app.setup.ts`, `tests/integration/support/**`.
+Allowed: `src/modules/scheduling/presentation/**`, `src/modules/scheduling/domain/scheduling.exceptions.ts`, `src/modules/scheduling/application/book-appointment.use-case.ts`, `src/app.setup.ts`, `src/shared/**` (catch-all filter), `tests/integration/support/**`.
 
 Constraint: Round 2 tests stay unchanged. `ResourceNotFoundException` stays one class and carries which resource is missing (dealership or service type), so T2.16 still passes.
 
@@ -162,3 +162,9 @@ Constraint: Round 2 tests stay unchanged. `ResourceNotFoundException` stays one 
 - T4.9 Every error body has exactly the keys `statusCode`, `code`, `message` (plus `details` for validation only), and no value contains an exception class name.
 - T4.10 One HTTP request per code, asserting status and `code`: START_TIME_IN_PAST, OUTSIDE_WORKING_HOURS, OVERNIGHT_CONSENT_REQUIRED, DEALERSHIP_NOT_FOUND, SERVICE_TYPE_NOT_FOUND (unknown id, and a service type the dealership does not offer), PLATE_PHONE_MISMATCH, NO_QUALIFIED_TECHNICIAN, VEHICLE_UNAVAILABLE, BAY_UNAVAILABLE, TECHNICIAN_UNAVAILABLE. SERVICE_BUSY is covered by T4.6, extended to assert `code`.
 - T4.11 A malformed request (`startTime` with `+07:00` and `name` missing) → 400, `code: VALIDATION_FAILED`, `details` is a non-empty string array with one entry per invalid field.
+- T4.12 Malformed JSON body (e.g. `{"name":`) → 400, `code: VALIDATION_FAILED`, body keys per DESIGN.md "Error response format".
+- T4.13 `GET /nope` (unknown route) → 404, `code: ROUTE_NOT_FOUND`, body keys `statusCode`, `code`, `message` only.
+- T4.14 Unexpected error: override the unit of work so it throws a plain `Error('db exploded: secret detail')` → 500, `code: INTERNAL_ERROR`, `message` exactly `"Internal server error"`, and the body does not contain `db exploded`, `secret detail` or a stack trace.
+- T4.14b The unexpected error from T4.14 is logged server-side with its original message and stack (DESIGN.md "logged server-side only").
+- T4.15 A request body larger than the parser limit → 413, `code: REQUEST_REJECTED`, body keys `statusCode`, `code`, `message` only.
+- T4.8 (adjusted) The scheduling filter's own unlisted-error fallback case is removed; unexpected errors are covered by the catch-all filter (T4.14).

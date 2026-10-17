@@ -198,6 +198,10 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 
 Errors raised outside the scheduling exception filter use the same body **[Resolved]**: malformed JSON body → 400 `VALIDATION_FAILED`; unknown route → 404 `ROUTE_NOT_FOUND`; any unexpected error → 500 `INTERNAL_ERROR` with the generic message "Internal server error". The original error message and stack are logged server-side only and never returned.
 
+Other framework errors **[Resolved]**: any HTTP exception not covered by an existing code keeps its real status and gets code `REQUEST_REJECTED`; only errors that are not HTTP exceptions become 500 `INTERNAL_ERROR`.
+
+"HTTP exception" includes framework client errors raised outside Nest, such as body-parser errors (objects with a numeric 4xx status and `expose: true`).
+
 **Rejection responses** (Code column **[Resolved]**):
 
 | Condition | HTTP | Code | Tag |
@@ -273,6 +277,8 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 12. **Booking transaction limits** **[Resolved]** — The booking transaction runs at READ COMMITTED with a 15 s timeout and a 10 s maximum wait for a connection.
 
 13. **startTime format** **[Resolved]** — `startTime` must include seconds (always `:00`) and at most 3 fraction digits; lowercase `z` is rejected.
+
+14. **Malformed JSON error body** **[Resolved]** — A malformed JSON body returns `VALIDATION_FAILED` without `details`, because no single field is invalid.
 
 ---
 

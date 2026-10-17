@@ -37,8 +37,11 @@ export class BookAppointmentUseCase {
   private async book(tx: BookingTransaction, command: BookAppointmentCommand, licensePlate: string): Promise<Appointment> {
     const dealership = await tx.findDealership(command.dealershipId);
     const serviceType = await tx.findServiceType(command.serviceTypeId);
-    if (!dealership || !serviceType || serviceType.dealershipId !== dealership.id) {
-      throw new ResourceNotFoundException();
+    if (!dealership) {
+      throw new ResourceNotFoundException('dealership');
+    }
+    if (!serviceType || serviceType.dealershipId !== dealership.id) {
+      throw new ResourceNotFoundException('serviceType');
     }
 
     const startTime = command.startTime;

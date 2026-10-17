@@ -12,33 +12,59 @@ import {
   VehicleUnavailableException,
 } from '../domain/scheduling.exceptions';
 
-/** CLAUDE.md §7 exception → HTTP status table. Errors not listed fall through to Nest's default handling. */
-const STATUS_BY_EXCEPTION: ReadonlyArray<[new () => Error, HttpStatus]> = [
-  [PastStartTimeException, HttpStatus.BAD_REQUEST],
-  [OutsideWorkingHoursException, HttpStatus.BAD_REQUEST],
-  [OvernightConsentRequiredException, HttpStatus.BAD_REQUEST],
-  [ResourceNotFoundException, HttpStatus.NOT_FOUND],
-  [PlatePhoneMismatchException, HttpStatus.CONFLICT],
-  [SkillMismatchException, HttpStatus.UNPROCESSABLE_ENTITY],
-  [VehicleUnavailableException, HttpStatus.CONFLICT],
-  [BayUnavailableException, HttpStatus.CONFLICT],
-  [TechnicianUnavailableException, HttpStatus.CONFLICT],
-  [TransactionTimeoutException, HttpStatus.SERVICE_UNAVAILABLE],
+interface ErrorMapping {
+  type: abstract new (...args: never[]) => Error;
+  status: HttpStatus;
+  code: (exception: Error) => string;
+}
+
+const fixed =
+  (code: string) =>
+  (): string =>
+    code;
+
+/** CLAUDE.md §7 statuses and DESIGN.md error codes. Errors not listed fall through to Nest's default handling. */
+const MAPPINGS: readonly ErrorMapping[] = [
+  { type: PastStartTimeException, status: HttpStatus.BAD_REQUEST, code: fixed('START_TIME_IN_PAST') },
+  { type: OutsideWorkingHoursException, status: HttpStatus.BAD_REQUEST, code: fixed('OUTSIDE_WORKING_HOURS') },
+  {
+    type: OvernightConsentRequiredException,
+    status: HttpStatus.BAD_REQUEST,
+    code: fixed('OVERNIGHT_CONSENT_REQUIRED'),
+  },
+  {
+    type: ResourceNotFoundException,
+    status: HttpStatus.NOT_FOUND,
+    code: (exception) =>
+      exception instanceof ResourceNotFoundException && exception.resource === 'serviceType'
+        ? 'SERVICE_TYPE_NOT_FOUND'
+        : 'DEALERSHIP_NOT_FOUND',
+  },
+  { type: PlatePhoneMismatchException, status: HttpStatus.CONFLICT, code: fixed('PLATE_PHONE_MISMATCH') },
+  { type: SkillMismatchException, status: HttpStatus.UNPROCESSABLE_ENTITY, code: fixed('NO_QUALIFIED_TECHNICIAN') },
+  { type: VehicleUnavailableException, status: HttpStatus.CONFLICT, code: fixed('VEHICLE_UNAVAILABLE') },
+  { type: BayUnavailableException, status: HttpStatus.CONFLICT, code: fixed('BAY_UNAVAILABLE') },
+  { type: TechnicianUnavailableException, status: HttpStatus.CONFLICT, code: fixed('TECHNICIAN_UNAVAILABLE') },
+  { type: TransactionTimeoutException, status: HttpStatus.SERVICE_UNAVAILABLE, code: fixed('SERVICE_BUSY') },
 ];
 
 interface JsonResponse {
   status(code: number): { json(body: unknown): void };
 }
 
-@Catch(...STATUS_BY_EXCEPTION.map(([exception]) => exception))
+@Catch(...MAPPINGS.map((mapping) => mapping.type))
 export class SchedulingExceptionFilter implements ExceptionFilter {
   catch(exception: Error, host: ArgumentsHost): void {
-    const status =
-      STATUS_BY_EXCEPTION.find(([type]) => exception instanceof type)?.[1] ?? HttpStatus.INTERNAL_SERVER_ERROR;
+    const mapping = MAPPINGS.find(({ type }) => exception instanceof type);
+    if (!mapping) {
+      // Unreachable: @Catch lists only mapped types, so Nest never routes an unmapped error here.
+      throw exception;
+    }
+    // DESIGN.md "Error response format": { statusCode, code, message }; never the exception class name.
     host
       .switchToHttp()
       .getResponse<JsonResponse>()
-      .status(status)
-      .json({ statusCode: status, error: exception.name, message: exception.message });
+      .status(mapping.status)
+      .json({ statusCode: mapping.status, code: mapping.code(exception), message: exception.message });
   }
 }

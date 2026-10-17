@@ -223,3 +223,27 @@ Then re-review.
 /spec-record API Contract -- 
 1. Error response format [Resolved]: every error body is { statusCode, code, message }; validation errors add details (string array, one entry per invalid field). Exception class names never appear in responses. message is English for debugging; clients rely on code.
 2. Rejection responses table [Resolved]: add a Code column with: past START_TIME_IN_PAST; overnight OVERNIGHT_CONSENT_REQUIRED; no skilled technician NO_QUALIFIED_TECHNICIAN; no bay BAY_UNAVAILABLE; no technician TECHNICIAN_UNAVAILABLE; vehicle conflict VEHICLE_UNAVAILABLE; plate/phone PLATE_PHONE_MISMATCH; outside hours OUTSIDE_WORKING_HOURS; unknown dealership DEALERSHIP_NOT_FOUND; unknown or not-offered service type SERVICE_TYPE_NOT_FOUND; timeout SERVICE_BUSY. Add a row: input format invalid → 400, VALIDATION_FAILED.
+
+### 2026-10-17 14:16 — Phase 4 — TDD Round 4c (error body and codes)
+
+/tdd-round Round 4c -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 14:34 — Phase 4 — Spec Record (errors outside the filter)
+
+/spec-record API Contract -- 
+Error response format [Resolved], add: errors raised outside the scheduling exception filter use the same body. Malformed JSON body → 400 VALIDATION_FAILED. Unknown route → 404 ROUTE_NOT_FOUND. Any unexpected error → 500 INTERNAL_ERROR with the generic message "Internal server error"; the original error message and stack are logged server-side only and never returned.
+
+### 2026-10-17 14:37 — Phase 4 — TDD Round 4c (re-run with framework errors)
+
+/tdd-round Round 4c -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 14:49 — Phase 4 — TDD Round 4c (A-14 approved, REQUEST_REJECTED, T4.15)
+
+approve A-14.
+For other framework errors: do NOT turn them into 500. Any HttpException not covered by an existing code keeps its real status and gets code REQUEST_REJECTED; only non-HttpException errors become 500 INTERNAL_ERROR.
+Record this in DESIGN.md "Error response format" as [Resolved] (this message is my approval), add case T4.15 to Round 4c: a request body larger than the parser limit → 413, code REQUEST_REJECTED, and implement it. Then re-run verify and the review.
+
+### 2026-10-17 15:01 — Phase 4 — TDD Round 4c (logging test, Minors, close)
+
+fix 1 + Minors (leave #3). T4.8 (adjusted) is approved — I wrote it.
+After this re-review, close Round 4c: report any remaining Minor findings, but do not stop for them.
