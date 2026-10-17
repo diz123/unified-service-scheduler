@@ -134,14 +134,16 @@ Allowed: `src/modules/scheduling/infrastructure/**`, `tests/integration/support/
 
 File: `tests/unit/scheduling/book-appointment.dto.spec.ts` — run with `pnpm test`. Validates the HTTP DTO in isolation (class-validator), before mapping to the application command.
 
-- T4.2 [Validation step 1] 400: each required field missing (`name`, `phone`, `licensePlate`, `dealershipId`, `serviceTypeId`, `startTime`); `startTime` not ISO 8601; `overnightConsent` not a boolean; blank after normalization (A-11): `name: "   "`, `licensePlate: " - . "`, `phone: "   "`. `make`, `model`, `overnightConsent` omitted → accepted.
+- T4.2 [Validation step 1] 400: each required field missing (`name`, `phone`, `licensePlate`, `dealershipId`, `serviceTypeId`, `startTime`); `startTime` not ISO 8601; `overnightConsent` not a boolean; blank after normalization (A-11): `name: "   "`, `licensePlate: " - . "`, `phone: "   "`. `make`, `model`, `overnightConsent` omitted → accepted. Well-formed but impossible `startTime` (`2030-02-30T02:00:00Z`, `2030-01-15T25:00:00Z`) → 400. Empty `dealershipId` or `serviceTypeId` (`""`) → 400.
 - T4.3 [Validation step 1] 400: `startTime` with an offset other than `Z` (e.g. `+07:00`).
 - T4.4 [Validation step 1] 400: `startTime` with non-zero seconds or milliseconds.
+- T4.4b [Validation step 1, A-13] 400: `startTime` without seconds (`2030-01-15T02:00Z`), with more than 3 fraction digits (`2030-01-15T02:00:00.0000Z`), or with lowercase `z` (`2030-01-15T02:00:00z`).
 
 ## Round 4b — E2E: HTTP contract (real PostgreSQL)
 
 File: `tests/integration/scheduling/book-appointment.http.spec.ts` — run with `pnpm test:integration`. Boots the NestJS app in-process and calls the endpoint via supertest.
 
 - T4.1 201 response contains `id`, `startTime`, `endTime`, `status`, assigned `ServiceBay`, assigned `Technician`.
-- T4.5 Exception → status mapping: one request each producing 400 (past), 404, 422, 409 (bay), 409 (plate/phone mismatch). The 400 request also proves the global validation pipe is wired.
+- T4.5 Exception → status mapping: one request each producing 400 (past), 404, 422, 409 (bay), 409 (plate/phone mismatch). A separate malformed request (`startTime` with `+07:00`) → 400 proves the global validation pipe is wired; a past time cannot prove it, because the use case also rejects it with 400.
 - T4.6 The exception filter maps a Prisma transaction timeout (P2028) to 503, not 500.
+- T4.7 `overnightConsent: "false"` (a string) → 400. The global ValidationPipe must not use implicit type conversion.

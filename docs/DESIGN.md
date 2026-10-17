@@ -265,6 +265,8 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 
 12. **Booking transaction limits** **[Resolved]** — The booking transaction runs at READ COMMITTED with a 15 s timeout and a 10 s maximum wait for a connection.
 
+13. **startTime format** **[Resolved]** — `startTime` must include seconds (always `:00`) and at most 3 fraction digits; lowercase `z` is rejected.
+
 ---
 
 ## Open Questions

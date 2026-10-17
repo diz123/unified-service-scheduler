@@ -178,3 +178,20 @@ Also:
 2. Case list, Round 4b: add T4.6 — the exception filter maps a Prisma transaction timeout (P2028) to 503, not 500.
 3. Doc fixes: correct T3.8's note (it is no longer the only Layer 1 case); add "at two dealerships" to T3.11–T3.13; in ADR-0001 Amendment 1, add one erratum line: locks use tagged-template tx.$executeRaw, not $queryRaw.
 Docs only, no code. Show git diff.
+
+### 2026-10-17 12:37 — Phase 4 — TDD Round 4a (request DTO validation)
+
+/tdd-round Round 4a -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 12:52 — Phase 4 — TDD Round 4a (review fix, calendar and empty-id cases)
+
+add T4.2 calendar case — use it.each with '2030-02-30T02:00:00Z' and '2030-01-15T25:00:00Z'. Also add one more T4.2 case: dealershipId "" and serviceTypeId "" → 400 (prove it fails without @IsNotEmpty). Add both to the case list, prove each fails with its check removed, then re-run the review.
+Record in DESIGN.md Assumptions as [Resolved]: "startTime must include seconds (always :00) and at most 3 fraction digits; lowercase z is rejected."
+Update the Round 4b case list now (docs only):
+- Add T4.7: overnightConsent "false" (string) → 400. The global ValidationPipe must not use implicit type conversion.
+- Fix T4.5: prove the validation pipe is wired with a malformed request (startTime with +07:00), not with a past time.
+Leave the plate /\d/ Minor as is.
+
+### 2026-10-17 13:03 — Phase 4 — TDD Round 4a (A-13 cases, close round)
+
+add A-13 cases. After this re-review, close Round 4a: report any remaining Minor findings, but do not stop for them.
