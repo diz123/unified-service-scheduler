@@ -275,3 +275,7 @@ Before committing, add T5.12 (mirror of T5.11): book with phone "090 123 4567", 
 
 approve ADR note.
 Also record in DESIGN.md "Out of Scope for MVP → Next phase": rate limiting on Look Up Appointments (this message is my approval).
+
+### 2026-10-17 16:34 — Phase 4 — TDD Round 6 (seed script)
+
+/tdd-round Round 6 -- docs/drafts/book-appointment-test-cases.md
