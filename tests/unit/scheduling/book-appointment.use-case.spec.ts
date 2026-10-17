@@ -11,6 +11,8 @@ import {
 } from '../../../src/modules/scheduling/domain/entities';
 import {
   BayUnavailableException,
+  OutsideWorkingHoursException,
+  OvernightConsentRequiredException,
   PastStartTimeException,
   PlatePhoneMismatchException,
   ResourceNotFoundException,
@@ -631,5 +633,28 @@ describe('BookAppointmentUseCase — T2.21 validation order: the earlier step wi
     world.appointment({ serviceType, bay, technician, startTime: SLOT, endTime: SLOT_END });
 
     await expect(world.book(serviceType, SLOT)).rejects.toThrow(BayUnavailableException);
+  });
+});
+
+describe('BookAppointmentUseCase — time rules', () => {
+  it('T2.22 the use case enforces past-start, working-hours and overnight-consent rules', async () => {
+    const world = new World();
+    const dealership = world.dealership();
+    const serviceType = world.serviceType(dealership, 120);
+    world.bay(dealership, 'Bay 01');
+    world.technician(dealership, 'Tech 01');
+
+    // NOW is 2030-01-01
+    await expect(world.book(serviceType, '2029-12-31T02:00:00Z')).rejects.toThrow(PastStartTimeException);
+    // 17:00 local
+    await expect(world.book(serviceType, '2030-01-15T10:00:00Z')).rejects.toThrow(OutsideWorkingHoursException);
+    // 16:00 local + 120 min → 09:00 local next day
+    await expect(world.book(serviceType, '2030-01-15T09:00:00Z')).rejects.toThrow(
+      OvernightConsentRequiredException,
+    );
+    await expect(world.book(serviceType, '2030-01-15T09:00:00Z', { overnightConsent: true })).resolves.toMatchObject({
+      status: 'Confirmed',
+      endTime: new Date('2030-01-16T02:00:00Z'),
+    });
   });
 });

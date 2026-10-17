@@ -73,6 +73,8 @@ Note: the in-memory fakes re-implement overlap and lookup logic, so boundary cas
 
 - T2.21 [Validation order] Each pair returns the earlier step: unknown dealership + past startTime → 404; past startTime + plate/phone mismatch → 400; plate/phone mismatch + no skilled technician → PlatePhoneMismatchException; no skilled technician + vehicle overlap → 422; vehicle overlap + all bays busy → vehicle 409; all bays busy + all technicians busy → bay 409.
 
+- T2.22 [I-9, I-13, I-11] The use case enforces the time rules: past `startTime` → PastStartTimeException; start at 17:00 local → OutsideWorkingHoursException; a booking that ends on a later local date with `overnightConsent` omitted → OvernightConsentRequiredException; the same booking with `overnightConsent: true` → Confirmed.
+
 Note: the order inside step 3 (past, working hours, overnight consent) all returns 400, so it is not tested here.
 
 ## Round 3 — Integration: real PostgreSQL (+ HTTP via supertest)
