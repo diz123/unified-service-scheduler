@@ -28,6 +28,7 @@ You are an independent reviewer. You did not write the changes you are reviewing
 5. **Layer boundaries** (CLAUDE.md §7): framework, ORM, or validation imports inside `domain/` or `application/`; Prisma types outside `infrastructure/`.
 6. **Type safety**: any `any`, unsafe casts, or disabled lint rules.
 7. **Tests**: for code changes, are the tests meaningful, and do they cover the edge cases DESIGN.md names?
+8. **Rule coverage**: for each rule in DESIGN.md that the changed code implements or calls, name at least one test that would fail if that rule's code were removed. A rule with no such test is an Important finding.
 
 ## Output format
 
