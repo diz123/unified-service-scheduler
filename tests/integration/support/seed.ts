@@ -35,11 +35,16 @@ export async function insertServiceBay(prisma: PrismaClient, dealershipId: strin
   return id;
 }
 
-export async function insertTechnician(prisma: PrismaClient, dealershipId: string, name: string): Promise<string> {
+export async function insertTechnician(
+  prisma: PrismaClient,
+  dealershipId: string,
+  name: string,
+  skill = 'Maintenance',
+): Promise<string> {
   const id = randomUUID();
   await prisma.$executeRaw`
     INSERT INTO "Technician" ("id", "dealershipId", "name", "skills")
-    VALUES (${id}, ${dealershipId}, ${name}, ARRAY['Maintenance'])`;
+    VALUES (${id}, ${dealershipId}, ${name}, ARRAY[${skill}])`;
   return id;
 }
 

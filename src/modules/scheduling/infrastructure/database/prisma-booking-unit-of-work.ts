@@ -17,6 +17,7 @@ import {
 import {
   BayUnavailableException,
   TechnicianUnavailableException,
+  TransactionTimeoutException,
   VehicleUnavailableException,
 } from '../../domain/scheduling.exceptions';
 import { Prisma, PrismaClient } from '../../../../shared/infrastructure/database/generated/client';
@@ -130,22 +131,38 @@ export class PrismaBookingTransaction implements BookingTransaction {
   }
 }
 
-export class PrismaBookingUnitOfWork implements BookingUnitOfWork {
-  constructor(private readonly prisma: PrismaClient) {}
+export interface BookingTransactionLimits {
+  timeoutMs?: number;
+  maxWaitMs?: number;
+}
 
-  run<T>(normalizedPlate: string, dealershipId: string, work: (tx: BookingTransaction) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction(
-      async (tx) => {
-        // ADR-0001 Layer 1, fixed order to rule out deadlocks: plate advisory lock, then the Dealership row.
-        await tx.$executeRaw`SELECT pg_advisory_xact_lock(${plateLockKey(normalizedPlate)})`;
-        await tx.$executeRaw`SELECT 1 FROM "Dealership" WHERE "id" = ${dealershipId} FOR UPDATE`;
-        return work(new PrismaBookingTransaction(tx));
-      },
-      {
-        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-        timeout: TRANSACTION_TIMEOUT_MS,
-        maxWait: TRANSACTION_MAX_WAIT_MS,
-      },
-    );
+export class PrismaBookingUnitOfWork implements BookingUnitOfWork {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly limits: BookingTransactionLimits = {},
+  ) {}
+
+  async run<T>(normalizedPlate: string, dealershipId: string, work: (tx: BookingTransaction) => Promise<T>): Promise<T> {
+    try {
+      return await this.prisma.$transaction(
+        async (tx) => {
+          // ADR-0001 Layer 1, fixed order to rule out deadlocks: plate advisory lock, then the Dealership row.
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(${plateLockKey(normalizedPlate)})`;
+          await tx.$executeRaw`SELECT 1 FROM "Dealership" WHERE "id" = ${dealershipId} FOR UPDATE`;
+          return work(new PrismaBookingTransaction(tx));
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+          timeout: this.limits.timeoutMs ?? TRANSACTION_TIMEOUT_MS,
+          maxWait: this.limits.maxWaitMs ?? TRANSACTION_MAX_WAIT_MS,
+        },
+      );
+    } catch (error) {
+      // P2028: the interactive transaction timed out or could not start in time (DESIGN.md → 503, retryable).
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2028') {
+        throw new TransactionTimeoutException();
+      }
+      throw error;
+    }
   }
 }

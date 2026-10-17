@@ -60,3 +60,10 @@ export class VehicleUnavailableException extends Error {
     this.name = 'VehicleUnavailableException';
   }
 }
+
+export class TransactionTimeoutException extends Error {
+  constructor(message = 'The booking could not be completed in time; please retry') {
+    super(message);
+    this.name = 'TransactionTimeoutException';
+  }
+}

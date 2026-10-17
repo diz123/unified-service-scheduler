@@ -147,3 +147,4 @@ File: `tests/integration/scheduling/book-appointment.http.spec.ts` — run with 
 - T4.5 Exception → status mapping: one request each producing 400 (past), 404, 422, 409 (bay), 409 (plate/phone mismatch). A separate malformed request (`startTime` with `+07:00`) → 400 proves the global validation pipe is wired; a past time cannot prove it, because the use case also rejects it with 400.
 - T4.6 The exception filter maps a Prisma transaction timeout (P2028) to 503, not 500.
 - T4.7 `overnightConsent: "false"` (a string) → 400. The global ValidationPipe must not use implicit type conversion.
+- T4.8 (unit, `tests/unit/scheduling/scheduling-exception.filter.spec.ts`) The exception filter maps every domain exception in CLAUDE.md §7 to its status (table-driven, one case per exception class), and an unlisted error → 500. The "Input validation errors → 400" row comes from the ValidationPipe and is covered by T4.5f.

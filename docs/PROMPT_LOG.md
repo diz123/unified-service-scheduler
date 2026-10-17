@@ -195,3 +195,25 @@ Leave the plate /\d/ Minor as is.
 ### 2026-10-17 13:03 — Phase 4 — TDD Round 4a (A-13 cases, close round)
 
 add A-13 cases. After this re-review, close Round 4a: report any remaining Minor findings, but do not stop for them.
+
+### 2026-10-17 13:10 — Phase 4 — TDD Round 4b (HTTP contract)
+
+/tdd-round Round 4b -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 13:21 — Phase 4 — TDD Round 4b (approve scripts, verify build)
+
+approve scripts.
+During Verify, also run `pnpm build` and boot the compiled app (`node dist/main`), confirm it starts and serves one request, then stop it. If it fails, stop and report.
+In your final summary, propose (do not apply) an ADR-0001 note: NestJS 12 is ESM-only; the project stays CommonJS; Jest runs with --experimental-vm-modules; the runtime relies on Node 24 require(esm). I'll approve it separately.
+
+### 2026-10-17 13:32 — Phase 4 — TDD Round 4b (approve rootDir, build in verify)
+
+approve rootDir.
+Also add `pnpm build` to the end of the `verify` script in package.json, so a broken build fails verify from now on.
+Then re-run pnpm verify, boot node dist/main, send one request, stop the app, and continue to the review.
+
+### 2026-10-17 13:44 — Phase 4 — TDD Round 4b (filter unit test T4.8, three Minors)
+
+add filter unit test — table-driven over EVERY row of CLAUDE.md §7 (exception → status), plus one case: an unlisted error → 500. Mutation-check by deleting one row. Add it to the case list as T4.8.
+Also fix three Minors: (1) call app.enableShutdownHooks() in main.ts; (2) use instanceof Prisma.PrismaClientKnownRequestError for the P2028 check; (3) move createPrismaClient into src/shared/infrastructure/database/. If (3) is outside the allowed files, treat this message as approval.
+Then re-review.

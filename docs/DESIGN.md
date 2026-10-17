@@ -192,6 +192,8 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 
 **Success response** **[Assumed]**: The created `Appointment` including `id`, `startTime`, `endTime`, `status`, assigned `ServiceBay`, and assigned `Technician`.
 
+**HTTP** **[Resolved]**: `POST /appointments` → 201. The body is the created `Appointment` with identifiers only: `id`, `customerId`, `vehicleId`, `dealershipId`, `serviceTypeId`, `serviceBayId`, `technicianId`, `startTime`, `endTime` (ISO 8601 UTC), `status`.
+
 **Rejection responses**:
 
 | Condition | HTTP | Tag |

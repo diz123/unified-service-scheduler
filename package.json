@@ -11,10 +11,10 @@
     "dev": "nest start --watch",
     "start": "node dist/main",
     "typecheck": "tsc --noEmit",
-    "test": "jest --testPathPatterns=tests/unit --passWithNoTests",
-    "test:integration": "jest --testPathPatterns=tests/integration --runInBand --passWithNoTests",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=tests/unit --passWithNoTests",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=tests/integration --runInBand --passWithNoTests",
     "lint": "eslint .",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm prisma validate"
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm prisma validate && pnpm build"
   },
   "dependencies": {
     "@nestjs/common": "12.1.3",
