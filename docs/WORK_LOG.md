@@ -23,3 +23,4 @@
 | 2026-10-17 03:03 | /spec-record I-13, 404s, validation order | Engineer | I-13 start within working hours (400); unknown dealership/service type 404; 8-step validation order | docs/DESIGN.md |
 | 2026-10-17 07:42 | /spec-record docs/drafts/spec-record-decisions.md | AI | Stopped: file marked NOT yet agreed; Q1–Q3 overlap/conflict with recorded spec; nothing recorded | docs/PROMPT_LOG.md, docs/WORK_LOG.md |
 | 2026-10-17 07:55 | /spec-record docs/drafts/spec-record-decisions.md (agreed Q4–Q16) | Engineer | Name-order allocation; workload date; Z + minute-aligned startTime; past = <= now; no midnight/DST; plate/phone rules; 2 exception names | docs/DESIGN.md |
+| 2026-10-17 08:24 | /tdd-red Round 1 working-hours & time rules | AI | 12 tests T1.1–T1.12 red on Not implemented; domain stubs; tsconfig types [node, jest] for TS 6 | tests/unit/scheduling/working-hours.spec.ts, src/modules/scheduling/domain/*, tsconfig.json |

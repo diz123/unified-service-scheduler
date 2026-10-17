@@ -82,3 +82,7 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 07:55 — Phase 4 — Spec Record (Q4–Q16 from draft decisions file)
 
 /spec-record docs/drafts/spec-record-decisions.md
+
+### 2026-10-17 08:24 — Phase 4 — TDD Red Round 1 (working-hours & time rules)
+
+/tdd-red Round 1 -- docs/drafts/book-appointment-test-cases.md
