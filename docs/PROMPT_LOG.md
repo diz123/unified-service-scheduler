@@ -247,3 +247,12 @@ Record this in DESIGN.md "Error response format" as [Resolved] (this message is 
 
 fix 1 + Minors (leave #3). T4.8 (adjusted) is approved — I wrote it.
 After this re-review, close Round 4c: report any remaining Minor findings, but do not stop for them.
+
+### 2026-10-17 15:16 — Phase 4 — Spec Record (read-only operations HTTP)
+
+/spec-record API Contract -- 
+Read-Only Operations [Resolved], add HTTP details:
+1. List Dealerships: GET /dealerships → 200, array sorted by name; each item: id, name, openTime, closeTime, timezone.
+2. List Service Types: GET /dealerships/:dealershipId/service-types → 200, array sorted by name; each item: id, name, durationMinutes (requiredSkill is not exposed). Unknown dealership → 404 DEALERSHIP_NOT_FOUND.
+3. Look Up Appointments: POST /appointments/lookup with body { licensePlate, phone } — POST so the phone never appears in a URL or access log. Plate and phone are normalized and compared exactly as in Book Appointment. → 200, that vehicle's appointments in every status, newest startTime first; each item: id, startTime, endTime, status, dealership { id, name }, serviceType { id, name }. Unknown plate or plate/phone mismatch → 404 APPOINTMENTS_NOT_FOUND with an identical body. Invalid body → 400 VALIDATION_FAILED.
+4. Rejection table: add row "Look Up Appointments finds no match" → 404, APPOINTMENTS_NOT_FOUND.

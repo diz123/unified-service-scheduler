@@ -168,3 +168,20 @@ Constraint: Round 2 tests stay unchanged. `ResourceNotFoundException` stays one 
 - T4.14b The unexpected error from T4.14 is logged server-side with its original message and stack (DESIGN.md "logged server-side only").
 - T4.15 A request body larger than the parser limit → 413, `code: REQUEST_REJECTED`, body keys `statusCode`, `code`, `message` only.
 - T4.8 (adjusted) The scheduling filter's own unlisted-error fallback case is removed; unexpected errors are covered by the catch-all filter (T4.14).
+
+## Round 5 — Read-only operations (HTTP, real PostgreSQL)
+
+File: `tests/integration/scheduling/read-operations.http.spec.ts` — run with `pnpm test:integration`. Source of truth: DESIGN.md "Read-Only Operations for the Booking Frontend".
+
+Allowed: `src/modules/scheduling/**`, `tests/integration/support/**`.
+
+- T5.1 `GET /dealerships` → 200, every dealership, sorted by name; each item has exactly `id`, `name`, `openTime`, `closeTime`, `timezone`.
+- T5.2 `GET /dealerships` with no dealerships → 200, `[]`.
+- T5.3 `GET /dealerships/:dealershipId/service-types` → 200, only that dealership's service types, sorted by name; each item has exactly `id`, `name`, `durationMinutes` (no `requiredSkill`).
+- T5.4 Same route, unknown `dealershipId` → 404, `code: DEALERSHIP_NOT_FOUND`.
+- T5.5 `POST /appointments/lookup` with a matching plate and phone → 200, that vehicle's appointments in every status (including `Cancelled`), newest `startTime` first; each item has exactly `id`, `startTime`, `endTime`, `status`, `dealership` (`id`, `name`), `serviceType` (`id`, `name`); no customer, phone or vehicle identifiers.
+- T5.6 Lookup normalizes the plate like Book Appointment: stored `51A12345`, request `51a-123.45` → found.
+- T5.7 Lookup never returns another vehicle's appointments (two vehicles seeded, only the requested one's are returned).
+- T5.8 Unknown plate → 404, `code: APPOINTMENTS_NOT_FOUND`.
+- T5.9 Known plate with a different phone → 404 with a body deep-equal to T5.8's (no enumeration).
+- T5.10 Lookup body invalid (missing `phone`; blank `licensePlate`) → 400, `code: VALIDATION_FAILED`, with `details`.

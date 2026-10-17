@@ -218,6 +218,7 @@ Other framework errors **[Resolved]**: any HTTP exception not covered by an exis
 | Unknown `dealershipId` | 404 | `DEALERSHIP_NOT_FOUND` | **[Resolved]** |
 | Unknown `serviceTypeId`, or service type not offered by the dealership | 404 | `SERVICE_TYPE_NOT_FOUND` | **[Resolved]** |
 | Transaction timeout or lock wait exhausted under load | 503 (retryable) | `SERVICE_BUSY` | **[Resolved]** |
+| Look Up Appointments finds no match | 404 | `APPOINTMENTS_NOT_FOUND` | **[Resolved]** |
 
 **Vehicle conflict** **[Resolved]**: a vehicle conflict raises `VehicleUnavailableException` → 409.
 
@@ -247,6 +248,12 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 | Look Up Appointments | `licensePlate`, `phone` | That vehicle's appointments: start/end time, dealership, service type, status. No name or phone. |
 
 **Look Up Appointments** is supplementary, beyond the three Core Requirements. A plate/phone mismatch returns the same "not found" result as an unknown plate.
+
+**HTTP** **[Resolved]**:
+
+- **List Dealerships**: `GET /dealerships` → 200, array sorted by `name`; each item: `id`, `name`, `openTime`, `closeTime`, `timezone`.
+- **List Service Types**: `GET /dealerships/:dealershipId/service-types` → 200, array sorted by `name`; each item: `id`, `name`, `durationMinutes` (`requiredSkill` is not exposed). Unknown dealership → 404 `DEALERSHIP_NOT_FOUND`.
+- **Look Up Appointments**: `POST /appointments/lookup` with body `{ licensePlate, phone }` — POST so the phone never appears in a URL or access log. Plate and phone are normalized and compared exactly as in Book Appointment. → 200, that vehicle's appointments in every status, newest `startTime` first; each item: `id`, `startTime`, `endTime`, `status`, `dealership { id, name }`, `serviceType { id, name }`. Unknown plate or plate/phone mismatch → 404 `APPOINTMENTS_NOT_FOUND` with an identical body. Invalid body → 400 `VALIDATION_FAILED`.
 
 ---
 
