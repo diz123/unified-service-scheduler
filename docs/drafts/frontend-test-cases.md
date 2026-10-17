@@ -1,18 +1,22 @@
-# Frontend Helpers — Test Case List (rev 1, draft)
+# Frontend Helpers — Test Case List (rev 1)
 
 Sources: `docs/DESIGN.md` (Error response format, Rejection responses, Frontend handling, Read-Only Operations, Assumptions 4, 13, 14), `docs/adr/0002-frontend-stack.md`, backend `tests/unit/scheduling/working-hours.spec.ts`.
 
 Scope: pure helpers in `frontend/lib/` only (ADR-0002 Testing). No React, no DOM, no network. UI behaviour (form kept on rejection, consent checkbox) is checked by hand in the UI rounds (ADR-0002 trade-off 2).
 
-Run with `pnpm --filter frontend test`. `/tdd-round` step 4 runs `pnpm verify`, which includes the frontend.
+Commands: `pnpm --filter frontend test`, `pnpm --filter frontend typecheck`, `pnpm --filter frontend lint`. The root `pnpm test` / `typecheck` / `lint` check the backend only; `pnpm verify` runs both.
 
-## Decisions needed (defaults in brackets — confirm or correct before Round F1)
+When a case lists several inputs or outcomes, write one test per input (`it.each` counts as one test per row).
 
-- FD-1 UI copy: DESIGN says clients rely on `code` but defines no user-facing text. [The frontend owns one English message per code. Codes may share a message where the customer action is the same, e.g. BAY_UNAVAILABLE and TECHNICIAN_UNAVAILABLE → "This time is no longer available".]
-- FD-2 Lookup times: the lookup response has `dealership { id, name }` but no `timezone`. [The UI takes the timezone from `GET /dealerships` by id and shows start/end in dealership local time via a `formatLocal` helper (F1.11–F1.12). This helper is an addition to the ADR list; it is the reverse of the conversion the ADR already names.]
-- FD-3 API unreachable: when the API is down, the proxy returns a non-JSON body or `fetch` throws. [Mapped to its own message, "Cannot reach the booking service. Please try again.", distinct from the generic fallback.]
-- FD-4 Invalid local date/time input: native date/time pickers make it unlikely. [`toUtcIso` throws `RangeError`; no silent roll-over.]
-- FD-5 API client: [kept thin and not unit-tested; its parsing logic lives in the pure `parseErrorBody` helper, which is tested.]
+## Frontend decisions (agreed 2026-10-17)
+
+FD-1 to FD-3 are recorded in `docs/DESIGN.md`. FD-4 and FD-5 are implementation choices recorded here only.
+
+- FD-1 UI copy: DESIGN says clients rely on `code` but defines no user-facing text. The frontend owns one English message per code. Codes may share a message where the customer action is the same, e.g. BAY_UNAVAILABLE and TECHNICIAN_UNAVAILABLE → "This time is no longer available".
+- FD-2 Lookup times: the lookup response has `dealership { id, name }` but no `timezone`. The UI takes the timezone from `GET /dealerships` by id and shows start/end in dealership local time via a `formatLocal` helper (F1.11–F1.12). This helper is an addition to the ADR list; it is the reverse of the conversion the ADR already names.
+- FD-3 API unreachable: when the API is down, the proxy returns a non-JSON body or `fetch` throws. Mapped to its own message, "Cannot reach the booking service. Please try again.", distinct from the generic fallback.
+- FD-4 Invalid local date/time input: native date/time pickers make it unlikely. `toUtcIso` throws `RangeError`; no silent roll-over.
+- FD-5 API client: kept thin and not unit-tested; its parsing logic lives in the pure `parseErrorBody` helper, which is tested.
 
 ## Round F1 — Local time ↔ UTC
 
@@ -21,12 +25,12 @@ Allowed: `frontend/lib/local-time.ts`
 
 Signatures: `toUtcIso(date: 'YYYY-MM-DD', time: 'HH:mm', timezone: string): string` and `formatLocal(isoUtc: string, timezone: string): string` → `'YYYY-MM-DD HH:mm'`.
 
-Cases F1.1–F1.4 reuse the backend fixtures (ADR-0002: "tested against the same cases as the backend"). Correct because all dealerships are in Vietnam with no DST (A-4); the Tokyo fixture only proves the timezone is not hardcoded.
+Cases F1.1–F1.4 reuse the backend fixtures' timezones, local times and UTC offsets (ADR-0002: "tested against the same cases as the backend"); the dates differ from the backend tests, which do not affect a fixed-offset conversion. Correct because all dealerships are in Vietnam with no DST (A-4); the Tokyo fixture only proves the timezone is not hardcoded.
 
-- F1.1 [backend T1.1] `2026-11-02`, `09:00`, `Asia/Ho_Chi_Minh` → `2026-11-02T02:00:00.000Z`.
-- F1.2 [backend T1.6] `2026-11-02`, `08:00`, `Asia/Tokyo` → `2026-11-01T23:00:00.000Z` (previous UTC day).
-- F1.3 [backend T1.6] Timezone not hardcoded: the same date and time in `Asia/Ho_Chi_Minh` and `Asia/Tokyo` give different results.
-- F1.4 [backend T1.10] `2026-11-02`, `06:00`, `Asia/Ho_Chi_Minh` → `2026-11-01T23:00:00.000Z` (local date ≠ UTC date).
+- F1.1 [offset as backend T1.1] `2026-11-02`, `09:00`, `Asia/Ho_Chi_Minh` → `2026-11-02T02:00:00.000Z`.
+- F1.2 [offset as backend T1.6, D2 fixture] `2026-11-02`, `08:00`, `Asia/Tokyo` → `2026-11-01T23:00:00.000Z` (previous UTC day).
+- F1.3 [as backend T1.6] Timezone not hardcoded: the same date and time in `Asia/Ho_Chi_Minh` and `Asia/Tokyo` give different results.
+- F1.4 [offset as backend T1.10] `2026-11-02`, `06:00`, `Asia/Ho_Chi_Minh` → `2026-11-01T23:00:00.000Z` (local date ≠ UTC date).
 - F1.5 [A-13] Output format: every result matches `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\.000Z$` (`Z` suffix, seconds `:00`, 3 fraction digits, uppercase `Z`).
 - F1.6 Local midnight: `2026-11-02`, `00:00`, `Asia/Ho_Chi_Minh` → `2026-11-01T17:00:00.000Z`.
 - F1.7 Year boundary: `2027-01-01`, `00:30`, `Asia/Ho_Chi_Minh` → `2026-12-31T17:30:00.000Z`.
