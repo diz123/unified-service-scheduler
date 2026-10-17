@@ -86,3 +86,7 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 08:24 — Phase 4 — TDD Red Round 1 (working-hours & time rules)
 
 /tdd-red Round 1 -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 08:31 — Phase 4 — TDD Green Round 1 (working-hours & time rules)
+
+/tdd-green Working-hours endTime and time rules (Round 1) -- allowed: src/modules/scheduling/domain/working-hours.ts, src/modules/scheduling/domain/scheduling.exceptions.ts
