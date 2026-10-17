@@ -2,8 +2,11 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../../src/shared/infrastructure/database/generated/client';
 
+const TEST_POOL_SIZE = 20;
+
 export function createTestPrisma(): PrismaClient {
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env['DATABASE_URL'] }) });
+  // Concurrency tests run N = 10 parallel transactions (ADR-0001: pool size >= N); leave headroom for row counts.
+  return new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env['DATABASE_URL'], max: TEST_POOL_SIZE }) });
 }
 
 /** Deletes all rows. Tests own the database pointed to by DATABASE_URL. */

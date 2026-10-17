@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   BookingTransaction,
   BookingUnitOfWork,
@@ -20,6 +20,14 @@ import {
   VehicleUnavailableException,
 } from '../../domain/scheduling.exceptions';
 import { Prisma, PrismaClient } from '../../../../shared/infrastructure/database/generated/client';
+
+/** Waits are serialised behind the Layer 1 locks, so a transaction may queue behind several others. */
+const TRANSACTION_TIMEOUT_MS = 15_000;
+const TRANSACTION_MAX_WAIT_MS = 10_000;
+
+/** Stable signed 64-bit advisory-lock key for a normalized plate (ADR-0001 Layer 1). */
+const plateLockKey = (normalizedPlate: string): bigint =>
+  createHash('sha256').update(normalizedPlate).digest().readBigInt64BE(0);
 
 /** ADR-0001 Layer 2: each exclusion constraint maps to the domain exception for its resource. */
 const OVERLAP_CONSTRAINTS: ReadonlyArray<[string, new () => Error]> = [
@@ -125,8 +133,19 @@ export class PrismaBookingTransaction implements BookingTransaction {
 export class PrismaBookingUnitOfWork implements BookingUnitOfWork {
   constructor(private readonly prisma: PrismaClient) {}
 
-  run<T>(_normalizedPlate: string, _dealershipId: string, work: (tx: BookingTransaction) => Promise<T>): Promise<T> {
-    // Layer 1 locks (plate advisory lock, then Dealership FOR UPDATE) are added with the Round 3c concurrency tests.
-    return this.prisma.$transaction((tx) => work(new PrismaBookingTransaction(tx)));
+  run<T>(normalizedPlate: string, dealershipId: string, work: (tx: BookingTransaction) => Promise<T>): Promise<T> {
+    return this.prisma.$transaction(
+      async (tx) => {
+        // ADR-0001 Layer 1, fixed order to rule out deadlocks: plate advisory lock, then the Dealership row.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(${plateLockKey(normalizedPlate)})`;
+        await tx.$executeRaw`SELECT 1 FROM "Dealership" WHERE "id" = ${dealershipId} FOR UPDATE`;
+        return work(new PrismaBookingTransaction(tx));
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        timeout: TRANSACTION_TIMEOUT_MS,
+        maxWait: TRANSACTION_MAX_WAIT_MS,
+      },
+    );
   }
 }

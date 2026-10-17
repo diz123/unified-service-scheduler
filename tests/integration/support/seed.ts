@@ -16,11 +16,15 @@ export async function insertDealership(
   return id;
 }
 
-export async function insertServiceType(prisma: PrismaClient, dealershipId: string): Promise<string> {
+export async function insertServiceType(
+  prisma: PrismaClient,
+  dealershipId: string,
+  durationMinutes = 60,
+): Promise<string> {
   const id = randomUUID();
   await prisma.$executeRaw`
     INSERT INTO "ServiceType" ("id", "dealershipId", "name", "requiredSkill", "durationMinutes")
-    VALUES (${id}, ${dealershipId}, 'Oil change', 'Maintenance', 60)`;
+    VALUES (${id}, ${dealershipId}, 'Oil change', 'Maintenance', ${durationMinutes})`;
   return id;
 }
 

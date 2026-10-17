@@ -165,3 +165,7 @@ Leave the T3.1 finding as is.
 add T3.3b. Also append T3.3b to the case list in docs/drafts/test-cases.md.
 Because T3.3b passes without a code change, prove it is meaningful: temporarily remove the "vehicleId" filter, show T3.3b failing, then restore the filter and show it passing. Then re-run the review.
 Defer both Minor findings to Round 3c.
+
+### 2026-10-17 12:15 — Phase 4 — TDD Round 3c (concurrency)
+
+/tdd-round Round 3c -- docs/drafts/book-appointment-test-cases.md
