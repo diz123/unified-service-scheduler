@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { seed } from '../../../prisma/seed';
+import { SEED_IDS, seed } from '../../../prisma/seed';
 import { AppModule } from '../../../src/app.module';
 import { configureApp } from '../../../src/app.setup';
 import { PrismaClient } from '../../../src/shared/infrastructure/database/generated/client';
@@ -189,6 +189,35 @@ const COVERAGE: [dealership: string, rules: Coverage[]][] = [
   ],
 ];
 
+type DealershipKey = keyof typeof SEED_IDS.dealerships;
+
+/** What each exported id must point at; typed by the SEED_IDS keys, so a new id without an entry fails typecheck. */
+const SEED_ID_TARGETS: {
+  dealerships: Record<DealershipKey, string>;
+  serviceTypes: Record<keyof typeof SEED_IDS.serviceTypes, [dealership: DealershipKey, name: string]>;
+} = {
+  dealerships: { benThanh: BEN_THANH, thuDuc: THU_DUC, phuMyHung: PHU_MY_HUNG, tanBinh: TAN_BINH, goVap: GO_VAP },
+  serviceTypes: {
+    benThanhOilChange: ['benThanh', 'Oil change'],
+    benThanhBrakeInspection: ['benThanh', 'Brake inspection'],
+    benThanhEvBatteryCheck: ['benThanh', 'EV battery check'],
+    thuDucOilChange: ['thuDuc', 'Oil change'],
+    thuDucEvBatteryCheck: ['thuDuc', 'EV battery check'],
+    thuDucBrakeInspection: ['thuDuc', 'Brake inspection'],
+    phuMyHungOilChange: ['phuMyHung', 'Oil change'],
+    phuMyHungTireRotation: ['phuMyHung', 'Tire rotation'],
+    phuMyHungAcService: ['phuMyHung', 'AC service'],
+    phuMyHungFullInspection: ['phuMyHung', 'Full inspection'],
+    phuMyHungTransmissionRepair: ['phuMyHung', 'Transmission repair'],
+    tanBinhOilChange: ['tanBinh', 'Oil change'],
+    tanBinhFullInspection: ['tanBinh', 'Full inspection'],
+    tanBinhBodyPaint: ['tanBinh', 'Body paint'],
+    goVapEvBatteryCheck: ['goVap', 'EV battery check'],
+    goVapEvSoftwareUpdate: ['goVap', 'EV software update'],
+    goVapBrakeInspection: ['goVap', 'Brake inspection'],
+  },
+};
+
 /** Every master-data row, ordered by id, with all fields. */
 async function masterData(): Promise<unknown> {
   return {
@@ -359,6 +388,34 @@ describe('Seed script (Round 6b)', () => {
       serviceBays: await prisma.serviceBay.findMany({ where: byIds(ROUND_6.serviceBays), orderBy: { id: 'asc' } }),
       technicians: await prisma.technician.findMany({ where: byIds(ROUND_6.technicians), orderBy: { id: 'asc' } }),
     }).toStrictEqual(ROUND_6);
+  });
+
+  it('every SEED_IDS entry resolves to the row with the expected name and dealership (Rules for the data)', async () => {
+    await seed(prisma);
+    const dealerships = new Map((await prisma.dealership.findMany()).map((d) => [d.id, d.name]));
+    const serviceTypes = new Map((await prisma.serviceType.findMany()).map((s) => [s.id, s]));
+
+    const resolved = {
+      dealerships: Object.fromEntries(
+        Object.entries(SEED_IDS.dealerships).map(([key, id]) => [key, dealerships.get(id)]),
+      ),
+      serviceTypes: Object.fromEntries(
+        Object.entries(SEED_IDS.serviceTypes).map(([key, id]) => {
+          const row = serviceTypes.get(id);
+          return [key, row && [dealerships.get(row.dealershipId), row.name]];
+        }),
+      ),
+    };
+
+    expect(resolved).toStrictEqual({
+      dealerships: SEED_ID_TARGETS.dealerships,
+      serviceTypes: Object.fromEntries(
+        Object.entries(SEED_ID_TARGETS.serviceTypes).map(([key, [dealership, name]]) => [
+          key,
+          [SEED_ID_TARGETS.dealerships[dealership], name],
+        ]),
+      ),
+    });
   });
 
   it.each(COVERAGE)('T6.7 %s: skill coverage matches the demo rules', async (name, rules) => {
