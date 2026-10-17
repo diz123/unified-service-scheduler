@@ -355,3 +355,7 @@ Then run pnpm test:integration and pnpm verify. Re-review once; do not stop for 
 ### 2026-10-17 19:16 — Phase 4 — Scaffold frontend per ADR-0002
 
 /scaffold 0002-frontend-stack -- frontend/ -- docs/drafts/frontend-scaffold-tree.md
+
+### 2026-10-17 19:51 — Phase 4 — Record frontend decisions FD-1 to FD-3
+
+/spec-record "Frontend handling" (under Rejection responses) and "Read-Only Operations for the Booking Frontend" -- Record only FD-1, FD-2 and FD-3 from docs/drafts/frontend-test-cases.md, section "Frontend decisions (agreed 2026-10-17)". FD-1 and FD-3 go under Frontend handling; FD-2 goes under Read-Only Operations, next to Look Up Appointments. Tag each [Resolved]. Do not record FD-4 or FD-5.

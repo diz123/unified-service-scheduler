@@ -90,3 +90,4 @@
 | 2026-10-17 18:33 | Fix draft line 7 | AI | HTTP status asserted in Rounds 4b, 4c, 5, 6 (not 3) | docs/drafts/book-appointment-test-cases.md |
 | 2026-10-17 18:57 | ADR-0002 frontend stack | Engineer | Next.js + workspace frontend/ + rewrites + Intl copy + Jest units; joins verify; Proposed | docs/adr/0002-frontend-stack.md, docs/DESIGN.md |
 | 2026-10-17 19:38 | Scaffold frontend (ADR-0002) | Engineer | ESLint 10 subset without eslint-config-next (peers ESLint ≤9); next/jest, no ts-jest; no new allowBuilds; verify + integration pass; review PASS | frontend/, pnpm-workspace.yaml, package.json verify, eslint.config.mjs, pnpm-lock.yaml, docs/adr/0002-frontend-stack.md pinned versions, CLAUDE.md §2 §6 |
+| 2026-10-17 19:51 | Record FD-1 to FD-3 | Engineer | Frontend messages per code; API-unreachable message; lookup times in dealership local time | docs/DESIGN.md |

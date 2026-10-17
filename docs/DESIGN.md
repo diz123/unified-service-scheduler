@@ -225,6 +225,10 @@ Other framework errors **[Resolved]**: any HTTP exception not covered by an exis
 
 **Frontend handling** **[Resolved]**: On rejection, the booking frontend shows the reason and keeps the form so the customer can pick another time.
 
+**Frontend messages** **[Resolved]**: The frontend owns one English user-facing message per error `code`. Codes may share a message where the customer action is the same, e.g. `BAY_UNAVAILABLE` and `TECHNICIAN_UNAVAILABLE` → "This time is no longer available".
+
+**API unreachable** **[Resolved]**: When the API is down (the proxy returns a non-JSON body or the request fails), the frontend shows its own message, "Cannot reach the booking service. Please try again.", distinct from the generic fallback.
+
 #### Validation order **[Resolved]**
 
 Checks run in this order and the first failure is returned:
@@ -249,6 +253,8 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 | Look Up Appointments | `licensePlate`, `phone` | That vehicle's appointments: start/end time, dealership, service type, status. No name or phone. |
 
 **Look Up Appointments** is supplementary, beyond the three Core Requirements. A plate/phone mismatch returns the same "not found" result as an unknown plate.
+
+**Lookup times in the frontend** **[Resolved]**: The Look Up Appointments response has `dealership { id, name }` but no `timezone`. The frontend takes the timezone from List Dealerships by dealership id and shows start and end times in dealership local time.
 
 **HTTP** **[Resolved]**:
 
