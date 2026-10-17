@@ -34,7 +34,7 @@ Backend first. The frontend starts only after the backend is complete and `pnpm 
 
 ### Out of Scope for MVP
 
-**Next phase**: On-arrival technician adjustment of service time/duration; multi-service bookings; nearest-slot suggestions on rejection; customer cancellation and rescheduling; booking limits per vehicle (anti-spam); per-technician shifts, breaks, and holidays; closed-day and holiday handling; master-data CRUD endpoints; notifications; available time-slot listing.
+**Next phase**: On-arrival technician adjustment of service time/duration; multi-service bookings; nearest-slot suggestions on rejection; customer cancellation and rescheduling; booking limits per vehicle (anti-spam); per-technician shifts, breaks, and holidays; closed-day and holiday handling; master-data CRUD endpoints; notifications; available time-slot listing; rate limiting on Look Up Appointments.
 
 **Why time-slot listing is next phase**: Core Requirement 1 is a request at a desired time, and Core Requirement 2 checks availability before confirming, so availability is checked on booking submission; a slot listing would not remove that check.
 

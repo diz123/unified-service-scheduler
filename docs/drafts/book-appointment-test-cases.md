@@ -187,3 +187,21 @@ Allowed: `src/modules/scheduling/**`, `tests/integration/support/**`.
 - T5.10 Lookup body invalid (missing `phone`; blank `licensePlate`) → 400, `code: VALIDATION_FAILED`, with `details`.
 - T5.11 Lookup compares phones like Book Appointment (spaces removed): stored phone `0901234567`, request `"090 123 4567"` → 200 with the appointments.
 - T5.12 Mirror of T5.11: book via `POST /appointments` with phone `"090 123 4567"`, then look up with `0901234567` → 200 with that appointment (the stored phone is normalized too).
+
+## Round 6 — Seed script (real PostgreSQL)
+
+File: `tests/integration/seed/seed.integration.spec.ts` — run with `pnpm test:integration`. The seed logic is an exported function taking a Prisma client, so tests call it directly; `pnpm db:seed` runs the same function against `DATABASE_URL`.
+
+Allowed: `prisma/seed.ts`, `prisma.config.ts`, `package.json` (`db:seed` script only, no new dependency), `tests/integration/support/**`.
+
+Seed data (DESIGN.md Target Deliverables: master data only — dealerships, service bays, technicians with skills, service types; no customers, vehicles or appointments):
+- 2 dealerships in `Asia/Ho_Chi_Minh` with different hours: one 08:00–17:00, one 07:30–19:00.
+- Each dealership: 3 service bays, 4 technicians with mixed skills, 3 service types.
+- One service type per dealership requires a skill no technician at that dealership holds (to demo 422).
+- All ids are fixed constants, exported for the README and demos.
+
+- T6.1 On an empty database, seeding creates exactly the data above (counts per dealership, hours, timezone).
+- T6.2 Running the seed a second time changes nothing: same row counts, same ids, same field values.
+- T6.3 Re-seeding never touches customers, vehicles or appointments: book one appointment over HTTP, re-seed, the appointment, customer and vehicle are unchanged.
+- T6.4 After seeding, booking each service type whose skill is covered, at a valid future time, returns 201 (seed data is consistent).
+- T6.5 After seeding, booking the uncovered service type returns 422 `NO_QUALIFIED_TECHNICIAN`.

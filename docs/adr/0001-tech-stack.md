@@ -6,6 +6,8 @@
 
 **Erratum** (Amendment 1): the Layer 1 locks are issued with tagged-template `tx.$executeRaw`, not `$queryRaw`.
 
+**Note** (2026-10-17): NestJS 12 ships as ESM only. The project stays CommonJS (`tsconfig` `module: CommonJS`). Jest runs with `node --experimental-vm-modules` (package.json `test`, `test:integration`) so it can load ESM packages. The compiled app relies on Node 24's built-in `require(esm)`, confirmed by booting `node dist/main`. `dotenv` is also loaded at app runtime via `import 'dotenv/config'` in `src/main.ts`.
+
 ---
 
 ## Context

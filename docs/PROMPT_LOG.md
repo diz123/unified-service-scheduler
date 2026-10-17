@@ -270,3 +270,8 @@ After this re-review, close Round 5: report remaining Minor findings, but do not
 ### 2026-10-17 15:58 — Phase 4 — TDD Round 5 (T5.12 mirror)
 
 Before committing, add T5.12 (mirror of T5.11): book with phone "090 123 4567", then look up with "0901234567" → 200. Add it to the case list and mutation-check it by normalizing only the request side. No other changes.
+
+### 2026-10-17 16:05 — Phase 4 — ADR note and rate-limit scope
+
+approve ADR note.
+Also record in DESIGN.md "Out of Scope for MVP → Next phase": rate limiting on Look Up Appointments (this message is my approval).
