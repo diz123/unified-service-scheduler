@@ -41,4 +41,4 @@ Thumbs.db
 
 # Obsidian local workspace cache (if editing docs with Obsidian)
 .obsidian/workspace.json
-.obsidian/cache/
+.obsidian/cache/.playwright-mcp/
