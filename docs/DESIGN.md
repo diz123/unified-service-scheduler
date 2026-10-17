@@ -194,21 +194,24 @@ A booking is rejected (400) when `startTime`, in the dealership's local time, is
 
 **HTTP** **[Resolved]**: `POST /appointments` → 201. The body is the created `Appointment` with identifiers only: `id`, `customerId`, `vehicleId`, `dealershipId`, `serviceTypeId`, `serviceBayId`, `technicianId`, `startTime`, `endTime` (ISO 8601 UTC), `status`.
 
-**Rejection responses**:
+**Error response format** **[Resolved]**: every error body is `{ statusCode, code, message }`; validation errors add `details` (string array, one entry per invalid field). Exception class names never appear in responses. `message` is English for debugging; clients rely on `code`.
 
-| Condition | HTTP | Tag |
-|---|---|---|
-| `startTime` is in the past | 400 | **[Resolved]** |
-| `overnightConsent` is `false` when `endTime` falls on a later local date than `startTime` | 400 | **[Resolved]** |
-| No `Technician` at the dealership holds the required skill | 422 | **[Assumed]** |
-| No available `ServiceBay` for the interval | 409 | **[Assumed]** |
-| No available qualified `Technician` for the interval | 409 | **[Assumed]** |
-| Vehicle already has a conflicting booking | 409 | **[Assumed]** |
-| Existing `licensePlate` with a different `phone` | 409 | **[Resolved]** |
-| `startTime` outside working hours (I-13) | 400 | **[Resolved]** |
-| Unknown `dealershipId` | 404 | **[Resolved]** |
-| Unknown `serviceTypeId`, or service type not offered by the dealership | 404 | **[Resolved]** |
-| Transaction timeout or lock wait exhausted under load | 503 (retryable) | **[Resolved]** |
+**Rejection responses** (Code column **[Resolved]**):
+
+| Condition | HTTP | Code | Tag |
+|---|---|---|---|
+| Input format invalid | 400 | `VALIDATION_FAILED` | **[Resolved]** |
+| `startTime` is in the past | 400 | `START_TIME_IN_PAST` | **[Resolved]** |
+| `overnightConsent` is `false` when `endTime` falls on a later local date than `startTime` | 400 | `OVERNIGHT_CONSENT_REQUIRED` | **[Resolved]** |
+| No `Technician` at the dealership holds the required skill | 422 | `NO_QUALIFIED_TECHNICIAN` | **[Assumed]** |
+| No available `ServiceBay` for the interval | 409 | `BAY_UNAVAILABLE` | **[Assumed]** |
+| No available qualified `Technician` for the interval | 409 | `TECHNICIAN_UNAVAILABLE` | **[Assumed]** |
+| Vehicle already has a conflicting booking | 409 | `VEHICLE_UNAVAILABLE` | **[Assumed]** |
+| Existing `licensePlate` with a different `phone` | 409 | `PLATE_PHONE_MISMATCH` | **[Resolved]** |
+| `startTime` outside working hours (I-13) | 400 | `OUTSIDE_WORKING_HOURS` | **[Resolved]** |
+| Unknown `dealershipId` | 404 | `DEALERSHIP_NOT_FOUND` | **[Resolved]** |
+| Unknown `serviceTypeId`, or service type not offered by the dealership | 404 | `SERVICE_TYPE_NOT_FOUND` | **[Resolved]** |
+| Transaction timeout or lock wait exhausted under load | 503 (retryable) | `SERVICE_BUSY` | **[Resolved]** |
 
 **Vehicle conflict** **[Resolved]**: a vehicle conflict raises `VehicleUnavailableException` → 409.
 

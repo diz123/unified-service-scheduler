@@ -217,3 +217,9 @@ Then re-run pnpm verify, boot node dist/main, send one request, stop the app, an
 add filter unit test — table-driven over EVERY row of CLAUDE.md §7 (exception → status), plus one case: an unlisted error → 500. Mutation-check by deleting one row. Add it to the case list as T4.8.
 Also fix three Minors: (1) call app.enableShutdownHooks() in main.ts; (2) use instanceof Prisma.PrismaClientKnownRequestError for the P2028 check; (3) move createPrismaClient into src/shared/infrastructure/database/. If (3) is outside the allowed files, treat this message as approval.
 Then re-review.
+
+### 2026-10-17 14:10 — Phase 4 — Spec Record (error response format and codes)
+
+/spec-record API Contract -- 
+1. Error response format [Resolved]: every error body is { statusCode, code, message }; validation errors add details (string array, one entry per invalid field). Exception class names never appear in responses. message is English for debugging; clients rely on code.
+2. Rejection responses table [Resolved]: add a Code column with: past START_TIME_IN_PAST; overnight OVERNIGHT_CONSENT_REQUIRED; no skilled technician NO_QUALIFIED_TECHNICIAN; no bay BAY_UNAVAILABLE; no technician TECHNICIAN_UNAVAILABLE; vehicle conflict VEHICLE_UNAVAILABLE; plate/phone PLATE_PHONE_MISMATCH; outside hours OUTSIDE_WORKING_HOURS; unknown dealership DEALERSHIP_NOT_FOUND; unknown or not-offered service type SERVICE_TYPE_NOT_FOUND; timeout SERVICE_BUSY. Add a row: input format invalid → 400, VALIDATION_FAILED.

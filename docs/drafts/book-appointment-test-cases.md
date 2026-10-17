@@ -148,3 +148,17 @@ File: `tests/integration/scheduling/book-appointment.http.spec.ts` — run with 
 - T4.6 The exception filter maps a Prisma transaction timeout (P2028) to 503, not 500.
 - T4.7 `overnightConsent: "false"` (a string) → 400. The global ValidationPipe must not use implicit type conversion.
 - T4.8 (unit, `tests/unit/scheduling/scheduling-exception.filter.spec.ts`) The exception filter maps every domain exception in CLAUDE.md §7 to its status (table-driven, one case per exception class), and an unlisted error → 500. The "Input validation errors → 400" row comes from the ValidationPipe and is covered by T4.5f.
+
+## Round 4c — Error body and codes
+
+File: `tests/integration/scheduling/book-appointment.http.spec.ts` — run with `pnpm test:integration`. T4.8 stays in `tests/unit/scheduling/scheduling-exception.filter.spec.ts`. Source of truth: DESIGN.md "Error response format" and the Code column of the rejection table.
+
+Allowed: `src/modules/scheduling/presentation/**`, `src/modules/scheduling/domain/scheduling.exceptions.ts`, `src/modules/scheduling/application/book-appointment.use-case.ts`, `src/app.setup.ts`, `tests/integration/support/**`.
+
+Constraint: Round 2 tests stay unchanged. `ResourceNotFoundException` stays one class and carries which resource is missing (dealership or service type), so T2.16 still passes.
+
+- T4.1 (tightened) The 201 body has exactly the 10 keys in DESIGN.md (`id`, `customerId`, `vehicleId`, `dealershipId`, `serviceTypeId`, `serviceBayId`, `technicianId`, `startTime`, `endTime`, `status`), no other keys, and every value is a string (identifiers only, no nested objects).
+- T4.8 (updated) The filter maps every domain exception to its status AND its code (table-driven, one case per exception class; `ResourceNotFoundException` once per resource).
+- T4.9 Every error body has exactly the keys `statusCode`, `code`, `message` (plus `details` for validation only), and no value contains an exception class name.
+- T4.10 One HTTP request per code, asserting status and `code`: START_TIME_IN_PAST, OUTSIDE_WORKING_HOURS, OVERNIGHT_CONSENT_REQUIRED, DEALERSHIP_NOT_FOUND, SERVICE_TYPE_NOT_FOUND (unknown id, and a service type the dealership does not offer), PLATE_PHONE_MISMATCH, NO_QUALIFIED_TECHNICIAN, VEHICLE_UNAVAILABLE, BAY_UNAVAILABLE, TECHNICIAN_UNAVAILABLE. SERVICE_BUSY is covered by T4.6, extended to assert `code`.
+- T4.11 A malformed request (`startTime` with `+07:00` and `name` missing) → 400, `code: VALIDATION_FAILED`, `details` is a non-empty string array with one entry per invalid field.
