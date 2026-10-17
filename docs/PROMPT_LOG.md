@@ -146,3 +146,22 @@ Verbatim task prompts and skill invocations from the human engineer (CLAUDE.md �
 ### 2026-10-17 10:53 — Phase 4 — TDD Round 3a (schema & constraints, retry 2)
 
 /tdd-round Round 3a -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 11:26 — Phase 4 — TDD Round 3b (Unit-of-Work adapter)
+
+/tdd-round Round 3b -- docs/drafts/book-appointment-test-cases.md -- note: write overlap queries in range form (tstzrange(...,'[)') && tstzrange(...)) with status = 'Confirmed' so the GiST indexes are used; raw inserts must supply id.
+
+### 2026-10-17 11:38 — Phase 4 — TDD Round 3b (gate fixes, T3.14b)
+
+yes. Also tighten T3.3.
+Add one Red test before the gate re-run:
+T3.14b — Rejected booking leaves no customer or vehicle rows (ADR-0001 Amendment 1: no orphan customers).
+Two parallel requests with two different NEW plates compete for the last free bay at the same slot.
+Expect: one 201, one 409; exactly 1 customer row and 1 vehicle row exist afterwards.
+Leave the T3.1 finding as is.
+
+### 2026-10-17 11:56 — Phase 4 — TDD Round 3b (review fix, T3.3b)
+
+add T3.3b. Also append T3.3b to the case list in docs/drafts/test-cases.md.
+Because T3.3b passes without a code change, prove it is meaningful: temporarily remove the "vehicleId" filter, show T3.3b failing, then restore the filter and show it passing. Then re-run the review.
+Defer both Minor findings to Round 3c.

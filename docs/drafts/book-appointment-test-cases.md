@@ -106,8 +106,10 @@ Allowed: `src/modules/scheduling/infrastructure/**`, `src/shared/infrastructure/
 - T3.1 [I-2] Back-to-back at 10:00 through the real query and constraint → succeeds.
 - T3.2 [I-2] A seeded overlapping `Cancelled` appointment does not block → succeeds.
 - T3.3 [I-10] Same plate and phone, overlapping booking at another dealership, through the real query → VehicleUnavailableException.
+- T3.3b [I-10] The vehicle check is scoped to the requesting vehicle: an existing plate books successfully while a different vehicle has an overlapping `Confirmed` booking on another bay at the same dealership.
 - T3.4 [Resolution] Plate normalization through the real lookup and unique constraint: stored `51A12345`, request `51a-123.45` → reuses the vehicle (no second Vehicle row).
 - T3.14 [Resolution, rejected booking creates nothing] A rejected booking with a new plate (e.g. no free bay) leaves no Customer or Vehicle row.
+- T3.14b [ADR Amendment 1, no orphan customers] run() rolls back: when the appointment insert fails after the customer and vehicle were created, no Customer or Vehicle row remains.
 - T3.16 [ADR Layer 2] Adapter mapping: a 23P01 from each constraint (triggered by calling the adapter's appointment insert directly, bypassing locks) is rethrown as Bay / Technician / VehicleUnavailableException (one test each).
 
 ## Round 3c — Concurrency
@@ -125,6 +127,8 @@ Allowed: `src/modules/scheduling/infrastructure/**`, `tests/integration/support/
 - T3.11 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel bookings, non-overlapping times → both succeed; exactly one Customer row and one Vehicle row.
 - T3.12 [Resolution, concurrent new plate] Same NEW plate, same phone, two parallel bookings, overlapping times → exactly 1 succeeds, 1 VehicleUnavailableException; one Vehicle row; no unexpected error.
 - T3.13 [Resolution, concurrent new plate] Same NEW plate, different phones, two parallel bookings → exactly 1 succeeds, 1 PlatePhoneMismatchException; no unexpected error.
+- T3.19 [ADR Amendment 1, rollback under contention] Two different NEW plates, two parallel bookings for the last free bay → exactly 1 succeeds, 1 BayUnavailableException; exactly one Customer row and one Vehicle row remain.
+- Note (from Round 3b review): set the interactive transaction's `timeout`, `maxWait` and `isolationLevel` explicitly; races T3.5–T3.7 must end in 409s, never in a transaction-timeout error.
 
 ## Round 4a — Presentation: request DTO validation (no DB)
 
