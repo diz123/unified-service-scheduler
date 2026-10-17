@@ -395,3 +395,27 @@ Stop & ask if: a behavior is not in DESIGN or this prompt; a file outside the al
 ### 2026-10-17 22:26 — Phase 4 — TDD Round 6b
 
 /tdd-round Round 6b -- docs/drafts/book-appointment-test-cases.md
+
+### 2026-10-17 23:12 — Phase 4 — Round F4 lookup and booking-form input fixes
+
+Phase: 4 — Implement (frontend UI, no unit tests per ADR-0002 trade-off 2)
+Task: Round F4 — appointment lookup on the same page, plus two booking-form input fixes.
+
+Scope:
+- Allowed files: frontend/app/lookup-form.tsx (new client component), frontend/app/page.tsx, frontend/app/booking-form.tsx, frontend/lib/api.ts, frontend/app/globals.css. No new packages, no backend change.
+- Lookup: licensePlate and phone (required, maxLength 20 each) → POST /api/appointments/lookup with buildLookupPayload.
+- Results: one row per appointment as returned (newest first): dealership name, service type name, start and end in dealership local time via formatLocal (timezone from the dealership list by id, DESIGN "Lookup times in the frontend"), status.
+- Errors: message and details from toUserMessage; keep the entered values. APPOINTMENTS_NOT_FOUND shows its message, not an empty list.
+- Load the dealership list once on the page and share it between booking and lookup.
+- Booking-form fix 1: if toUtcIso throws, show "Please enter a valid date and time." (approved copy) and do not send the request.
+- Booking-form fix 2: the date input's min is today's date in the selected dealership's timezone (a hint only; the API stays the source of truth).
+
+Done when: pnpm verify passes; smoke-test lookup in a browser (a booked appointment shows with local times; wrong phone shows the not-found message; API down shows the unreachable message); the reviewer subagent has reviewed the diff (table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; one commit proposal. Never stage or commit.
+
+Stop & ask if: a behavior is not in DESIGN or this prompt; a file outside the allowed list is needed; a package is needed.
+
+### 2026-10-17 23:34 — Phase 4 — Round F4 fix: lookup-rows, todayIn, unknown-timezone spec
+
+1 (b): move withTimezones to frontend/lib/lookup-rows.ts and todayIn to frontend/lib/local-time.ts (or a new lib file), with specs: withTimezones — each row gets its own dealership's timezone (two dealerships, different zones), and one unknown dealership id gives an empty list; todayIn — fixed clock, including 23:30Z → next local date in Asia/Ho_Chi_Minh. Allowed files for this fix: those lib files, their specs under frontend/tests/unit/, and the two .tsx files that import them.
+2 yes: /spec-record under "Lookup times in the frontend" — "If any dealership's timezone is unknown (e.g. List Dealerships failed), the frontend shows no lookup rows; the page shows the error message instead." Tag [Resolved].
+Then verify and re-review.

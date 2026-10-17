@@ -1,4 +1,4 @@
-import { formatLocal, toUtcIso } from '../../lib/local-time';
+import { formatLocal, todayIn, toUtcIso } from '../../lib/local-time';
 
 const HCM = 'Asia/Ho_Chi_Minh';
 const TOKYO = 'Asia/Tokyo';
@@ -74,5 +74,15 @@ describe('formatLocal — UTC to dealership local time (Round F1, FD-2)', () => 
 
   it.each(CONVERSIONS)('F1.12 round trip for %s returns the original local date and time', (_id, date, time, tz) => {
     expect(formatLocal(toUtcIso(date, time, tz), tz)).toBe(`${date} ${time}`);
+  });
+});
+
+describe('todayIn — the dealership local date for the date-picker minimum', () => {
+  it.each([
+    ['2026-10-17T10:00:00.000Z', '2026-10-17'],
+    // 23:30Z is 06:30 the next morning in Ho Chi Minh City (UTC+7).
+    ['2026-10-17T23:30:00.000Z', '2026-10-18'],
+  ])('at %s returns %s in Asia/Ho_Chi_Minh', (now, expected) => {
+    expect(todayIn(HCM, new Date(now))).toBe(expected);
   });
 });

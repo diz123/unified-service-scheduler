@@ -1,16 +1,15 @@
 'use client';
 
-import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, type FormEvent, useRef, useState } from 'react';
 import {
   type BookedAppointment,
   bookAppointment,
   type Dealership,
-  listDealerships,
   listServiceTypes,
   type ServiceType,
 } from '../lib/api';
 import { toUserMessage } from '../lib/error-messages';
-import { formatLocal } from '../lib/local-time';
+import { formatLocal, todayIn } from '../lib/local-time';
 import { type BookingForm as BookingFormValues, buildBookingPayload } from '../lib/payloads';
 
 const EMPTY: BookingFormValues = {
@@ -33,35 +32,26 @@ interface Feedback {
   details: string[];
 }
 
+/** Approved copy for a date or time the browser did not supply as `YYYY-MM-DD` / `HH:mm` (FD-4). */
+const INVALID_DATE_TIME = 'Please enter a valid date and time.';
+
 interface Confirmation {
   appointment: BookedAppointment;
   timezone: string;
 }
 
 /** Book Appointment (DESIGN.md API Contract), fields in the agreed booking-flow order. */
-export function BookingForm() {
+export function BookingForm({ dealerships }: { dealerships: Dealership[] }) {
   const [values, setValues] = useState<BookingFormValues>(EMPTY);
-  const [dealerships, setDealerships] = useState<Dealership[]>([]);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [isConsentAsked, setIsConsentAsked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [minDate, setMinDate] = useState<string | undefined>(undefined);
   // Only the latest dealership selection may fill the service-type list.
   const selectedDealership = useRef('');
-
-  useEffect(() => {
-    let isActive = true;
-    listDealerships().then((result) => {
-      if (!isActive) return;
-      if (result.ok) setDealerships(result.data);
-      else setLoadError(toUserMessage(result.error).message);
-    });
-    return () => {
-      isActive = false;
-    };
-  }, []);
 
   const dealership = dealerships.find((d) => d.id === values.dealershipId);
 
@@ -76,6 +66,8 @@ export function BookingForm() {
     setValues((current) => ({ ...current, dealershipId, serviceTypeId: '' }));
     setServiceTypes([]);
     setLoadError(null);
+    const selected = dealerships.find((d) => d.id === dealershipId);
+    setMinDate(selected === undefined ? undefined : todayIn(selected.timezone));
     if (dealershipId === '') return;
     const result = await listServiceTypes(dealershipId);
     if (selectedDealership.current !== dealershipId) return;
@@ -86,7 +78,14 @@ export function BookingForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (dealership === undefined || isSubmitting) return;
-    const payload = buildBookingPayload(values, dealership.timezone);
+    let payload;
+    try {
+      payload = buildBookingPayload(values, dealership.timezone);
+    } catch (error) {
+      if (!(error instanceof RangeError)) throw error;
+      setFeedback({ message: INVALID_DATE_TIME, details: [] });
+      return;
+    }
     setIsSubmitting(true);
     setFeedback(null);
     const result = await bookAppointment(payload);
@@ -109,6 +108,7 @@ export function BookingForm() {
     setFeedback(null);
     setIsConsentAsked(false);
     setConfirmation(null);
+    setMinDate(undefined);
   }
 
   if (confirmation !== null) {
@@ -214,7 +214,7 @@ export function BookingForm() {
         <div className="row">
           <label>
             Date
-            <input type="date" value={values.date} onChange={handleText('date')} required />
+            <input type="date" value={values.date} onChange={handleText('date')} min={minDate} required />
           </label>
           <label>
             Time

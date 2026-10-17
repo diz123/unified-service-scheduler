@@ -55,3 +55,8 @@ export function formatLocal(isoUtc: string, timezone: string): string {
   const instantMs = new Date(isoUtc).getTime();
   return new Date(instantMs + offsetMs(instantMs, timezone)).toISOString().slice(0, 16).replace('T', ' ');
 }
+
+/** Today's `YYYY-MM-DD` in `timezone`; a date-picker hint only, the API decides (DESIGN.md Validation order step 3). */
+export function todayIn(timezone: string, now: Date = new Date()): string {
+  return formatLocal(now.toISOString(), timezone).slice(0, 10);
+}

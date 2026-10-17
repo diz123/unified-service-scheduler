@@ -1,6 +1,6 @@
 // Thin fetch client (FD-5): not unit-tested; error parsing lives in parseErrorBody, which is.
 import { type ApiError, parseErrorBody } from './error-messages';
-import type { BookingRequest } from './payloads';
+import type { BookingRequest, LookupRequest } from './payloads';
 
 /** `GET /dealerships` item (DESIGN.md Read-Only Operations). */
 export interface Dealership {
@@ -30,6 +30,16 @@ export interface BookedAppointment {
   startTime: string;
   endTime: string;
   status: string;
+}
+
+/** `POST /appointments/lookup` item: UTC times, newest `startTime` first (DESIGN.md Read-Only Operations). */
+export interface AppointmentSummary {
+  id: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  dealership: { id: string; name: string };
+  serviceType: { id: string; name: string };
 }
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiError };
@@ -73,6 +83,13 @@ export const listServiceTypes = (dealershipId: string): Promise<ApiResult<Servic
 
 export const bookAppointment = (payload: BookingRequest): Promise<ApiResult<BookedAppointment>> =>
   request('/appointments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+export const lookUpAppointments = (payload: LookupRequest): Promise<ApiResult<AppointmentSummary[]>> =>
+  request('/appointments/lookup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

@@ -258,6 +258,8 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 
 **Lookup times in the frontend** **[Resolved]**: The Look Up Appointments response has `dealership { id, name }` but no `timezone`. The frontend takes the timezone from List Dealerships by dealership id and shows start and end times in dealership local time.
 
+**Unknown dealership timezone** **[Resolved]**: If any dealership's timezone is unknown (e.g. List Dealerships failed), the frontend shows no lookup rows; the page shows the error message instead.
+
 **HTTP** **[Resolved]**:
 
 - **List Dealerships**: `GET /dealerships` → 200, array sorted by `name`; each item: `id`, `name`, `openTime`, `closeTime`, `timezone`.
