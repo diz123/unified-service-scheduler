@@ -319,3 +319,7 @@ Then run pnpm test:integration and pnpm verify. Re-review once; do not stop for 
 /spec-record API Contract, Assumptions -- 
 1. API Contract, Book Appointment and Look Up Appointments inputs [Resolved]: maximum lengths, checked before normalization: name 100, phone 20, licensePlate 20, make 50, model 50. Longer → 400 VALIDATION_FAILED.
 2. Assumptions [Resolved], add: "Known limitation: the dealership row lock is held across the whole booking transaction (7–8 queries). Sufficient for the assumed ~12 bookings/s peak; revisit if per-dealership contention grows."
+
+### 2026-10-17 18:11 — Phase 4 — TDD Round 7 input length limits
+
+/tdd-round Round 7 -- docs/drafts/book-appointment-test-cases.md

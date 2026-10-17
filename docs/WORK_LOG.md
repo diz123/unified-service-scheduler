@@ -85,3 +85,4 @@
 | 2026-10-17 18:00 | Security review of backend | AI | No critical/high; 2 Medium (no max length on text fields; Postgres port on all interfaces); audit hits are dev/CLI-only | none |
 | 2026-10-17 18:05 | Record input lengths and lock limitation | Engineer | Max lengths (name 100, phone 20, plate 20, make 50, model 50) → 400; A-15 dealership lock scope | docs/DESIGN.md |
 | 2026-10-17 18:07 | Draft Round 7 test cases (input length limits) | Engineer (with external Claude chat) | T7.1–T7.3 from DESIGN.md Input lengths; DTO-only, no DB | docs/drafts/book-appointment-test-cases.md |
+| 2026-10-17 18:16 | Round 7 input length limits | AI | Red 9 failing; gate PASS; @MaxLength on both DTOs; verify 95/95; review PASS (1 Minor: WORK_LOG row) | src/modules/scheduling/presentation/dtos/*.ts, tests/unit/scheduling/input-lengths.dto.spec.ts |
