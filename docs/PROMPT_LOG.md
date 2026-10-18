@@ -492,3 +492,72 @@ Scope:
 Done when: pnpm verify passes; screenshots at 1280px and 390px of the hero, a focused field, a focused field with an error, the date strip and the time grid; keyboard check (Tab into the strip, arrows move, Space/Enter selects); the reviewer subagent reviews the diff (table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; one commit proposal. Never stage or commit.
 
 Stop & ask if: a behavior change outside this list seems needed; a file outside the allowed list is needed; a package is needed.
+
+### 2026-10-18 09:39 — Phase 4 — Round E2E Playwright smoke tests
+
+Phase: 4 — Implement (E2E smoke tests; ADR-0002 trade-off 2 trigger fired: both flows work)
+Task: Round E2E — Playwright smoke tests for booking, overnight consent and lookup.
+
+Approved by engineer: add @playwright/test as a root devDependency, latest stable verified against official docs, exact version pinned. Chromium only.
+
+Scope:
+- Allowed files: e2e/** (new), playwright.config.ts (new, root), package.json (devDependency + "test:e2e" script only), pnpm-lock.yaml, pnpm-workspace.yaml (allowBuilds only if install asks), eslint.config.mjs (add e2e/** to the linted files), .gitignore (Playwright output: test-results/, playwright-report/), docs/adr/0002-frontend-stack.md (append an "Amendment 1" section only: trigger fired, pinned version, how to run), tests/integration/support/** (reuse only, no behavior change).
+- "test:e2e" is NOT part of pnpm verify (ADR-0002).
+- Servers: Playwright webServer starts the API on 3000 and the frontend on 3001 against the TEST database (DATABASE_URL set from DATABASE_URL_TEST at runtime; never print it). reuseExistingServer: false — fail clearly if the ports are busy.
+- Global setup: refuse to run unless the database name ends in "_test" (same guard as scripts/test-integration.mjs); apply migrations; delete appointments, vehicles and customers; run the seed.
+- Pick dates through the UI date strip at least 3 days ahead, so slots are never in the past.
+
+Tests (one behavior each, stable role/label selectors, no fixed sleeps):
+1. Book: Phu My Hung, Oil change, a valid slot → success card shows start and end in local time and status Confirmed.
+2. Overnight: Ben Thanh, Brake inspection, 16:30 → overnight alert with the checkbox, and every entered value is still in the form → tick and submit → success, end time on the next day.
+3. Lookup: the plate and phone from test 1 → the appointment row with local times; same plate with a wrong phone → "No appointments found for these details." and both values kept.
+4. Conflict: book the same plate again at the same slot as test 1 → "This vehicle already has an appointment at that time." and the form is kept.
+
+Done when: pnpm test:e2e passes twice in a row (proves the reset works); pnpm verify still passes; the reviewer subagent reviews the diff (table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; one commit proposal. Never stage or commit.
+
+Stop & ask if: the API or frontend needs a code change to be testable; a file outside the allowed list is needed; the test database cannot be reached.
+
+### 2026-10-18 09:51 — Phase 4 — Round E2E go + typecheck and gitignore additions
+
+go. After both E2E runs pass, also: (1) add tsconfig.e2e.json covering e2e/** and playwright.config.ts (strict, noEmit) and append "&& tsc -p tsconfig.e2e.json --noEmit" to the root typecheck script, so pnpm verify type-checks the E2E files; (2) add docs/design/ to .gitignore. Both files are approved additions to this round's allowed list.
+
+### 2026-10-18 10:53 — Phase 4 — Local code review (E2E round)
+
+/code-review
+
+### 2026-10-18 11:06 — Phase 4 — Repo audit (ponytail)
+
+/ponytail:ponytail-audit
+
+### 2026-10-18 11:16 — Phase 4 — Ponytail review
+
+/ponytail:ponytail-review
+
+### 2026-10-18 17:00 — Phase 4 — Fixes from external reviews (groups A, B, C)
+
+Phase: 4 — Fixes from external reviews . Verified by the engineer; do exactly these, nothing else.
+
+Group A — E2E and harness (commit 1):
+A1. playwright.config.ts: API server command becomes "pnpm prisma migrate deploy && pnpm build && node dist/main" (servers start before globalSetup, so a fresh test DB must migrate there). Remove the migrate step from e2e/global-setup.ts; it keeps only delete + seed.
+A2. ADR-0002 Amendment 1: add one sentence — E2E and integration tests share scheduler_test; run them one at a time.
+A3. e2e/booking.spec.ts: drop pickDate's unused first parameter; move the selector comment above the function it describes.
+A4. tsconfig.e2e.json: remove experimentalDecorators and emitDecoratorMetadata (typecheck must still pass).
+A5. Export databaseKey from tests/integration/support/database.ts (no behavior change) and import it in e2e/support/test-database.ts; scripts/test-integration.mjs keeps its own copy.
+A6. CLAUDE.md §6: add "E2E smoke tests: pnpm test:e2e (not part of verify; needs ports 3000/3001 free)".
+
+Group B — backend index (commit 2):
+B1. New migration only (no schema logic change): CREATE INDEX "Appointment_dealership_range_confirmed_idx" ON "Appointment" USING gist ("dealershipId", tstzrange("startTime","endTime",'[)')) WHERE "status" = 'Confirmed'. Apply to dev and test DBs; prisma migrate diff must still report no difference (say so if Prisma cannot represent it, as with the exclusion constraints). Show EXPLAIN of the overlap query with SET enable_seqscan = off to prove the index is usable. No test change; pnpm test:integration must pass.
+
+Group C — frontend (commit 3):
+C1. layout.tsx: export metadata { title: "Unified Service Scheduler", description: one line }.
+C2. time-slots: add an optional notBefore (HH:mm) parameter; when today's date is selected, pass the current dealership-local time so past slots are not offered. Unit tests first: notBefore removes earlier slots, keeps the exact slot at notBefore, none left after the last slot.
+C3. Hiding "Other date": if the chosen date is not in the strip, clear the date (and time).
+C4. Changing dealership, service, date or time hides the overnight consent alert and unticks the checkbox.
+C5. New e2e/validation.spec.ts: focus Name, click "Book appointment" → the Name, Phone, License plate and Dealership messages appear (guards the holdForSubmit fix).
+C6. Move Icon, Field, describedBy, Alert, StatusBadge, Spinner, ChipGroup, useFieldErrors unchanged to frontend/app/form-kit.tsx; both forms import from it. Move only, no logic change.
+
+Not doing (record in WORK_LOG): stale date strip past midnight (rare; README known limitation); migrate error output (step removed by A1).
+
+Done when: pnpm verify passes; pnpm test:integration passes; pnpm test:e2e passes twice (stop dev servers first; ask me if ports are busy); the reviewer subagent reviews the whole diff (table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; three commit proposals, one per group, each listing its files. Never stage or commit.
+
+Stop & ask if: any item needs a behavior change beyond its description, or a file outside these groups.

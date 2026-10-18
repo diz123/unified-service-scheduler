@@ -9,11 +9,15 @@ const toMinutes = (hhmm: string): number => {
 const toHhmm = (minutes: number): string =>
   `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 
-/** `HH:mm` start times every 30 minutes from `openTime` up to, not including, `closeTime` (same local day, A-4). */
-export function timeSlots(openTime: string, closeTime: string): string[] {
+/**
+ * `HH:mm` start times every 30 minutes from `openTime` up to, not including, `closeTime` (same local day, A-4).
+ * `notBefore` (local `HH:mm`, used for today) drops earlier slots; a slot exactly at `notBefore` is kept.
+ */
+export function timeSlots(openTime: string, closeTime: string, notBefore?: string): string[] {
+  const earliest = notBefore === undefined ? 0 : toMinutes(notBefore);
   const slots: string[] = [];
   for (let m = toMinutes(openTime); m < toMinutes(closeTime); m += SLOT_MINUTES) {
-    slots.push(toHhmm(m));
+    if (m >= earliest) slots.push(toHhmm(m));
   }
   return slots;
 }

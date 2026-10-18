@@ -34,3 +34,17 @@ describe('timeSlots — 30-minute start times from open up to (not including) cl
     expect(slots[slots.length - 1]).toBe('17:00');
   });
 });
+
+describe('timeSlots with notBefore — today hides slots already past (Round C2)', () => {
+  it('removes slots earlier than notBefore', () => {
+    expect(timeSlots('08:00', '12:00', '10:10')).toStrictEqual(['10:30', '11:00', '11:30']);
+  });
+
+  it('keeps the slot exactly at notBefore', () => {
+    expect(timeSlots('08:00', '12:00', '10:30')[0]).toBe('10:30');
+  });
+
+  it('leaves no slots when notBefore is after the last slot', () => {
+    expect(timeSlots('08:00', '12:00', '11:45')).toStrictEqual([]);
+  });
+});

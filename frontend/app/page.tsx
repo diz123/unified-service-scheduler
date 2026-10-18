@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { type Dealership, listDealerships } from '../lib/api';
 import { toUserMessage } from '../lib/error-messages';
-import { Alert, BookingForm } from './booking-form';
+import { BookingForm } from './booking-form';
+import { Alert } from './form-kit';
 import { LogoMark } from './logo';
 import { LookupForm } from './lookup-form';
 

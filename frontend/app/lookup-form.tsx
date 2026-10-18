@@ -6,7 +6,7 @@ import { toUserMessage } from '../lib/error-messages';
 import { formatLocal } from '../lib/local-time';
 import { withTimezones } from '../lib/lookup-rows';
 import { buildLookupPayload, type LookupForm as LookupFormValues } from '../lib/payloads';
-import { Alert, describedBy, Field, Icon, Spinner, StatusBadge, useFieldErrors } from './booking-form';
+import { Alert, describedBy, Field, Icon, Spinner, StatusBadge, useFieldErrors } from './form-kit';
 
 interface Feedback {
   message: string;
