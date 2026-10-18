@@ -33,6 +33,7 @@ When designing components, writing documentation, or proposing solutions, struct
 2. **Stack ADR** — Write `docs/adr/0001-tech-stack.md`, evaluating candidates against Section 4.2. Human approves.
 3. **Scaffold** — Initialize the project per the accepted ADR. Update Sections 2 and 6 of this file.
 4. **Implement** — TDD per Section 8.
+5. **Document & submit** — SYSTEM_DESIGN.md, README.md, final review.
 
 - Do NOT scaffold, install packages, or write implementation code before Phase 2 is `Accepted`.
 - The current phase MUST be stated at the top of `docs/DESIGN.md`.

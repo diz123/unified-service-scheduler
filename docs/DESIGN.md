@@ -1,7 +1,7 @@
 # DESIGN — The Unified Service Scheduler
 
 > [!IMPORTANT]
-> **Current Phase: 4 — Implement**
+> **Current Phase: 5 — Document & submit**
 
 ---
 

@@ -1,4 +1,4 @@
-# Observability — Test Case List (rev 3)
+# Observability — Test Case List (rev 4)
 
 Sources: `docs/DESIGN.md` section Observability (O-1 to O-5), `docs/BRIEF.md` Challenge Structure ("Build For the Future … observability").
 
@@ -35,9 +35,17 @@ Allowed: `src/**` (observability wiring only), `tests/integration/observability/
 - T8.10 [O-2] A valid incoming `X-Request-Id` is echoed unchanged; an invalid one is replaced.
 - T8.11 [O-3] Exactly one access-log entry is written per request, with the same `requestId` as the response header and the response status.
 - T8.12 [O-3] A 409 `BAY_UNAVAILABLE` booking and a 404 `ROUTE_NOT_FOUND` produce entries that include `code` (one test each).
-- T8.13 [O-3] No log output written during a booking or a lookup contains that request's `phone`, `licensePlate` or `name`: check both the `Logger` calls and everything written to `process.stdout` and `process.stderr` while the request runs (one test per operation).
+- T8.13 [O-3] No log output written during a booking or a lookup contains that request's `phone`, `licensePlate` or `name`: check the `Logger` calls, `console` calls, and everything written to `process.stdout` and `process.stderr` while the request runs, with each argument rendered by `util.format` so `Error` objects (message and stack) are covered (one test per operation).
 - T8.14 [O-3] An unexpected error (the existing failing unit-of-work stub) produces an access-log entry at `error` level with `code` `INTERNAL_ERROR`; the response still carries `X-Request-Id`.
 - T8.15 [O-4] `GET /health` returns 200 with exactly `{ "status": "ok" }`.
 - T8.16 [O-1] A message written through the logger that `main.ts` uses is a single line of valid JSON containing the message and its context (capture `process.stdout.write`). `main.ts` gets the logger from one exported factory so the test and the app use the same configuration.
 - T8.17 [O-2, O-3] A malformed JSON body returns 400 `VALIDATION_FAILED` with an `X-Request-Id` header, and its access-log entry has `code` `VALIDATION_FAILED` (proves the middleware runs before the body parser).
 - T8.18 [O-4] `GET /health` with a failing database ping (override the ping provider) returns 503 with exactly the standard error body (`statusCode`, `code` `DATABASE_UNAVAILABLE`, `message`), without the ping error message, and with an `X-Request-Id` header.
+
+## Round 8c — Integration: X-Powered-By header
+
+File: `tests/integration/observability/observability.http.spec.ts` — run with `pnpm test:integration`.
+
+Allowed: `src/app.setup.ts`, `tests/integration/observability/**`.
+
+- T8.19 [O-2] Every response omits the `X-Powered-By` header (checked on `GET /health` and on a 404).

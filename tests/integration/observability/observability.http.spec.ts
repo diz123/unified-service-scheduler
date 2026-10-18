@@ -1,5 +1,6 @@
 import { INestApplication, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { format } from 'node:util';
 import request from 'supertest';
 import { AppModule } from '../../../src/app.module';
 import { configureApp } from '../../../src/app.setup';
@@ -104,9 +105,12 @@ const accessEntries = (): AccessEntry[] =>
 const entryFor = (requestId: unknown): AccessEntry | undefined =>
   accessEntries().find(({ entry }) => entry['requestId'] === requestId);
 
+/** Each argument as Node prints it; unlike JSON.stringify, an Error keeps its message and stack. */
+const renderArgs = (args: unknown[]): string => args.map((arg) => format(arg)).join(' ');
+
 /** Personal data found in the Logger calls or in `output` (stdout and stderr writes, console calls). */
 const personalDataLogged = (output: string): string[] => {
-  const logged = JSON.stringify(logCalls.map((call) => call.args)) + output;
+  const logged = logCalls.map((call) => renderArgs(call.args)).join('\n') + output;
   return PERSONAL_DATA.filter((value) => logged.includes(value));
 };
 
@@ -134,7 +138,7 @@ async function capturingOutput<T>(work: () => Promise<T>): Promise<{ result: T; 
   ];
   try {
     const result = await work();
-    return { result, output: written.join('') + JSON.stringify(consoleArgs) };
+    return { result, output: written.join('') + consoleArgs.map(renderArgs).join('\n') };
   } finally {
     restorers.forEach((spy) => spy.mockRestore());
   }
@@ -345,6 +349,20 @@ describe('GET /health (O-4, T8.15, T8.18)', () => {
     } finally {
       await failingApp.close();
     }
+  });
+});
+
+describe('No X-Powered-By header (O-2, T8.19)', () => {
+  it('T8.19a GET /health omits the X-Powered-By header', async () => {
+    const response = await request(server()).get('/health');
+
+    expect([response.status, response.headers['x-powered-by']]).toStrictEqual([200, undefined]);
+  });
+
+  it('T8.19b a 404 unknown route omits the X-Powered-By header', async () => {
+    const response = await request(server()).get('/no-such-route');
+
+    expect([response.status, response.headers['x-powered-by']]).toStrictEqual([404, undefined]);
   });
 });
 

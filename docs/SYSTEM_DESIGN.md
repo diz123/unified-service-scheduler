@@ -199,7 +199,7 @@ Pinned versions and reasons from [ADR-0001](adr/0001-tech-stack.md#decision) and
 
 Sources: [DESIGN Observability](DESIGN.md#observability-resolved), [src/shared](../src/shared).
 
-**Implemented** (O-1 to O-4, tested by T8.1–T8.18):
+**Implemented** (O-1 to O-4, tested by T8.1–T8.19):
 
 - **O-1 JSON logs** — `main.ts` uses `createAppLogger()`, a `ConsoleLogger` with `json: true`: one JSON line per message, with its context. No new packages.
 - **O-2 Request ID** — a valid incoming `X-Request-Id` (`^[A-Za-z0-9._-]{1,64}$`) is reused, otherwise a UUID v4 is generated; every response, including errors and malformed-JSON 400s, returns it.
@@ -228,10 +228,10 @@ Counts from fresh runs of `pnpm verify` and `pnpm test:integration` on 2026-10-1
 |---|---|---|
 | Backend unit (domain, use case, DTOs, filter; request ID, access-log entry, health check) | 115 in 9 suites (20 observability) | `pnpm test` |
 | Frontend unit (time, slots, errors, payloads) | 104 in 6 suites | `pnpm --filter frontend test` |
-| Integration (real PostgreSQL `scheduler_test`, HTTP via supertest) | 116 in 7 suites (15 observability) | `pnpm test:integration` |
+| Integration (real PostgreSQL `scheduler_test`, HTTP via supertest) | 118 in 7 suites (17 observability) | `pnpm test:integration` |
 | E2E (Playwright, Chromium; not in `verify`) | 6 in 2 specs | `pnpm test:e2e` |
 
-`pnpm verify` runs typecheck, lint, both unit levels, `prisma validate` and both builds. The observability tests are [tests/unit/shared](../tests/unit/shared) and [observability.http.spec.ts](../tests/integration/observability/observability.http.spec.ts) (T8.1–T8.18).
+`pnpm verify` runs typecheck, lint, both unit levels, `prisma validate` and both builds. The observability tests are [tests/unit/shared](../tests/unit/shared) and [observability.http.spec.ts](../tests/integration/observability/observability.http.spec.ts) (T8.1–T8.19).
 
 **Proof of I-3**: in [booking-concurrency](../tests/integration/scheduling/booking-concurrency.integration.spec.ts), T3.5–T3.7 and T3.9 fire N = 10 parallel bookings through the use case on a real database and exactly one wins; T3.10–T3.13 and T3.19 race two (same vehicle at two dealerships with no deadlock, same new plate, two new plates for the last bay); T3.8 shows no false contention. [booking-unit-of-work](../tests/integration/scheduling/booking-unit-of-work.integration.spec.ts) covers rollback (T3.14) and the 23P01 mapping (T3.16); [schema-constraints](../tests/integration/scheduling/schema-constraints.integration.spec.ts) proves with raw SQL that the exclusion constraints (T3.15) and A-16 guards (T3.20–T3.21) hold without the application.
 

@@ -14,6 +14,9 @@ const validationFailed = (errors: ValidationError[]): BadRequestException =>
 
 /** Global HTTP setup shared by main.ts and the tests: request ID and access log, validation pipe, exception filters. */
 export function configureApp(app: INestApplication): void {
+  // T8.19: no X-Powered-By header on any response (the Express instance behind the Nest adapter).
+  const express: { disable(setting: string): unknown } = app.getHttpAdapter().getInstance();
+  express.disable('x-powered-by');
   // Registered before init, so it runs ahead of the body parser and every route (DESIGN.md O-2, O-3).
   app.use(requestObservability);
   // No transform or implicit conversion: a string "false" must fail @IsBoolean (DESIGN.md, T4.7).

@@ -8,7 +8,7 @@ Keyloop technical assessment, Scenario A: an appointment scheduler that replaces
 - **Working-hours end time** — `endTime` is computed on the server by counting only opening hours; a service that runs into the next day needs `overnightConsent: true`.
 - **Automatic allocation** — the first free bay by name and the least-loaded qualified technician, always from the booked dealership.
 - **Observability** — JSON logs, an `X-Request-Id` on every response, one access-log line per request with no personal data, and `GET /health`.
-- **Tests** — 115 backend unit, 104 frontend unit, 116 integration (real PostgreSQL) and 6 E2E (Playwright).
+- **Tests** — 115 backend unit, 104 frontend unit, 118 integration (real PostgreSQL) and 6 E2E (Playwright).
 
 ## Prerequisites
 
@@ -88,7 +88,7 @@ Every error body is `{ statusCode, code, message, details? }`; the full list of 
 | Everything except integration and E2E: typecheck, lint, both unit suites, `prisma validate`, both builds | `pnpm verify` | — |
 | Backend unit | `pnpm test` | 115 |
 | Frontend unit | `pnpm --filter frontend test` | 104 |
-| Integration, real PostgreSQL (`scheduler_test`, created by the runner) | `pnpm test:integration` | 116 |
+| Integration, real PostgreSQL (`scheduler_test`, created by the runner) | `pnpm test:integration` | 118 |
 | E2E, Playwright Chromium (needs ports 3000 and 3001 free; run `pnpm exec playwright install chromium` once) | `pnpm test:e2e` | 6 |
 
 Integration and E2E tests share the `scheduler_test` database, so run them one at a time. `pnpm test:integration` prints `ERROR [AccessLog]` and `ERROR [AllExceptionsFilter]` lines (with a stack trace): they come from tests that trigger 500 and 503 on purpose, and the run still passes.
