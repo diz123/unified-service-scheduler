@@ -1,5 +1,7 @@
-// Exclusion constraints (ADR-0001 Layer 2), the btree_gist extension and the Dealership
-// working-hours CHECK are not expressible here; they live in the migration SQL.
+// Exclusion constraints (ADR-0001 Layer 2), the btree_gist extension, the Dealership
+// working-hours CHECK, the GiST index Appointment_dealership_range_confirmed_idx and the
+// A-16 CHECKs (service_type_duration_positive, appointment_end_after_start) are not
+// expressible here; they live in the migration SQL.
 
 generator client {
   provider     = "prisma-client"

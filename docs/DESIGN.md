@@ -220,6 +220,7 @@ Other framework errors **[Resolved]**: any HTTP exception not covered by an exis
 | Unknown `serviceTypeId`, or service type not offered by the dealership | 404 | `SERVICE_TYPE_NOT_FOUND` | **[Resolved]** |
 | Transaction timeout or lock wait exhausted under load | 503 (retryable) | `SERVICE_BUSY` | **[Resolved]** |
 | Look Up Appointments finds no match | 404 | `APPOINTMENTS_NOT_FOUND` | **[Resolved]** |
+| `GET /health` database ping fails | 503 | `DATABASE_UNAVAILABLE` | **[Resolved]** |
 
 **Vehicle conflict** **[Resolved]**: a vehicle conflict raises `VehicleUnavailableException` → 409.
 
@@ -266,6 +267,34 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 - **List Service Types**: `GET /dealerships/:dealershipId/service-types` → 200, array sorted by `name`; each item: `id`, `name`, `durationMinutes` (`requiredSkill` is not exposed). Unknown dealership → 404 `DEALERSHIP_NOT_FOUND`.
 - **Look Up Appointments**: `POST /appointments/lookup` with body `{ licensePlate, phone }` — POST so the phone never appears in a URL or access log. Plate and phone are normalized and compared exactly as in Book Appointment. → 200, that vehicle's appointments in every status, newest `startTime` first; each item: `id`, `startTime`, `endTime`, `status`, `dealership { id, name }`, `serviceType { id, name }`. Unknown plate or plate/phone mismatch → 404 `APPOINTMENTS_NOT_FOUND` with an identical body. Invalid body → 400 `VALIDATION_FAILED`.
 
+### Health **[Resolved]**
+
+- **Health**: `GET /health` → 200 `{"status":"ok"}` when a database ping succeeds; otherwise 503 `DATABASE_UNAVAILABLE` in the standard error body. See [O-4](#o-4--health).
+
+---
+
+## Observability **[Resolved]**
+
+### O-1 — Structured logs
+
+The API writes JSON log lines with the NestJS `ConsoleLogger` `json` option. No new packages.
+
+### O-2 — Request ID
+
+An incoming `X-Request-Id` is reused when it matches `^[A-Za-z0-9._-]{1,64}$`; otherwise a new UUID v4 is generated. Every response, including errors, returns it in the `X-Request-Id` header.
+
+### O-3 — Access log
+
+One entry per completed request with `requestId`, `method`, path without query string, `statusCode`, `durationMs`, and `code` when the error body has one. Level `log` below 500, `error` at 500 and above. Request and response bodies, `phone`, `licensePlate` and `name` are never logged.
+
+### O-4 — Health
+
+`GET /health` returns 200 `{"status":"ok"}` when a database ping succeeds, otherwise 503 with code `DATABASE_UNAVAILABLE` in the standard error body. The ping error is logged, not returned.
+
+### O-5 — Metrics and tracing
+
+Next phase (strategy in [SYSTEM_DESIGN.md](SYSTEM_DESIGN.md)).
+
 ---
 
 ## Assumptions
@@ -299,6 +328,8 @@ Read-only operations used by the booking frontend. No create, update, or delete 
 14. **Malformed JSON error body** **[Resolved]** — A malformed JSON body returns `VALIDATION_FAILED` without `details`, because no single field is invalid.
 
 15. **Dealership lock scope** **[Resolved]** — Known limitation: the dealership row lock is held across the whole booking transaction (7–8 queries). Sufficient for the assumed ~12 bookings/s peak; revisit if per-dealership contention grows.
+
+16. **Zero-length interval guards** **[Resolved]** — `ServiceType.durationMinutes` must be greater than 0, enforced by CHECK constraint `service_type_duration_positive`. `Appointment.endTime` must be greater than `startTime`, enforced by CHECK constraint `appointment_end_after_start`. Reason: a `[)` range with `endTime = startTime` is empty and overlaps nothing, so a zero-duration service type would bypass the overlap query and all three exclusion constraints (I-3).
 
 ---
 

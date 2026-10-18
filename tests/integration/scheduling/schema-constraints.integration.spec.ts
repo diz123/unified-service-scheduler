@@ -135,3 +135,51 @@ describe('Vehicle license plate uniqueness (T3.18)', () => {
     expect(error.message).toContain('licensePlate');
   });
 });
+
+describe('Zero-length interval guards (A-16, T3.20–T3.21)', () => {
+  const ELEVEN_ZERO_ONE = new Date('2030-01-15T04:01:00Z');
+
+  it('T3.20a a ServiceType with durationMinutes = 0 is rejected by service_type_duration_positive', async () => {
+    const dealershipId = await insertDealership(prisma);
+
+    const error = await sqlErrorOf(insertServiceType(prisma, dealershipId, 0));
+
+    expect([error.code, error.message.includes('service_type_duration_positive')]).toStrictEqual(['23514', true]);
+  });
+
+  it('T3.20b a ServiceType with durationMinutes = -30 is rejected by service_type_duration_positive', async () => {
+    const dealershipId = await insertDealership(prisma);
+
+    const error = await sqlErrorOf(insertServiceType(prisma, dealershipId, -30));
+
+    expect([error.code, error.message.includes('service_type_duration_positive')]).toStrictEqual(['23514', true]);
+  });
+
+  it('T3.21a a Confirmed appointment with endTime = startTime is rejected by appointment_end_after_start', async () => {
+    const row = await otherResources(await seedExisting());
+
+    const error = await sqlErrorOf(insertAppointment(prisma, { ...row, startTime: ELEVEN, endTime: ELEVEN }));
+
+    expect([error.code, error.message.includes('appointment_end_after_start')]).toStrictEqual(['23514', true]);
+  });
+
+  it('T3.21b a Confirmed appointment with endTime before startTime is rejected by appointment_end_after_start', async () => {
+    const row = await otherResources(await seedExisting());
+
+    const error = await sqlErrorOf(insertAppointment(prisma, { ...row, startTime: ELEVEN, endTime: TEN }));
+
+    expect([error.code, error.message.includes('appointment_end_after_start')]).toStrictEqual(['23514', true]);
+  });
+
+  it('T3.21c-1 a ServiceType with durationMinutes = 1 is accepted', async () => {
+    const dealershipId = await insertDealership(prisma);
+
+    await expect(insertServiceType(prisma, dealershipId, 1)).resolves.toEqual(expect.any(String));
+  });
+
+  it('T3.21c-2 a one-minute Confirmed appointment is accepted', async () => {
+    const row = await otherResources(await seedExisting());
+
+    await expect(insertAppointment(prisma, { ...row, startTime: ELEVEN, endTime: ELEVEN_ZERO_ONE })).resolves.toBe(1);
+  });
+});

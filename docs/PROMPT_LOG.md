@@ -561,3 +561,46 @@ Not doing (record in WORK_LOG): stale date strip past midnight (rare; README kno
 Done when: pnpm verify passes; pnpm test:integration passes; pnpm test:e2e passes twice (stop dev servers first; ask me if ports are busy); the reviewer subagent reviews the whole diff (table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; three commit proposals, one per group, each listing its files. Never stage or commit.
 
 Stop & ask if: any item needs a behavior change beyond its description, or a file outside these groups.
+
+### 2026-10-18 17:56 — Phase 4 — Record assumption 16 (zero-length interval guards)
+
+/spec-record Assumptions -- Add assumption 16. **Zero-length interval guards** **[Resolved]** — `ServiceType.durationMinutes` must be greater than 0, enforced by CHECK constraint `service_type_duration_positive`. `Appointment.endTime` must be greater than `startTime`, enforced by CHECK constraint `appointment_end_after_start`. Reason: a `[)` range with `endTime = startTime` is empty and overlaps nothing, so a zero-duration service type would bypass the overlap query and all three exclusion constraints (I-3).
+
+### 2026-10-18 17:58 — Phase 4 — TDD Round 3d zero-length interval guards
+
+/tdd-round docs/drafts/book-appointment-test-cases.md -- Round 3d only. Add one new migration with the two CHECK constraints (raw SQL, named exactly as in the cases; created with prisma migrate dev --create-only against the dev database). Update the ADR-0001 erratum dated 2026-10-18: raw SQL now lives in three migrations, and name the new one. Do not touch application code.
+
+### 2026-10-18 18:49 — Phase 5 — Write SYSTEM_DESIGN.md
+
+**Phase**: 5 — Documentation (submission)
+**Task**: Write `docs/SYSTEM_DESIGN.md`, the "brief system design document" the assessment asks for. A reviewer should understand the whole system in about 10 minutes.
+
+**Scope**:
+- In: create `docs/SYSTEM_DESIGN.md` only, in English, 2–4 printed pages. Sections, in this order:
+  1. Problem and scope — the 3 core requirements (quote BRIEF), what is in the MVP, what is next phase.
+  2. Architecture — one Mermaid diagram: browser → Next.js (port 3001, `/api/*` rewrite) → NestJS API (port 3000) → PostgreSQL; module-first layers (domain, application, infrastructure, presentation).
+  3. Data model — one Mermaid ER diagram of the 6 entities and their relations; Appointment status as a state machine (I-6).
+  4. Booking flow — one Mermaid sequence diagram of POST /appointments, following the DESIGN Validation order (8 steps) and the transaction boundary.
+  5. Availability and no double-booking — Layer 1 (plate advisory lock → Dealership row FOR UPDATE, READ COMMITTED, fixed order = no deadlock), Layer 2 (3 named exclusion constraints, 23P01 → 409), the GiST index, the A-16 CHECK constraints (why an empty `[)` range would bypass both layers), and why availability is checked on submit rather than via a slot listing (quote DESIGN "Why time-slot listing is next phase").
+  6. Time rules — server-computed endTime over working hours (I-7, with the 16:00 example), overnight consent (I-11), local-date judgment, start within working hours (I-13), past rejection (I-9).
+  7. Allocation — bay by name; technician by fewest same-local-day Confirmed appointments, ties by name (A-2, A-3); same dealership only (I-8).
+  8. API and errors — the endpoints with one line each; error body `{ statusCode, code, message, details? }`; a table of codes → HTTP status.
+  9. Key trade-offs — 6–8 rows: decision | chosen | trade-off accepted (take them from ADR-0001, ADR-0002 and DESIGN; Scale A-5 must be labelled as an assumption).
+  10. Testing — the 4 levels with current counts and the command for each, plus the concurrency tests (T3.5–T3.19) as the proof of I-3.
+  11. Known limitations and next steps — from DESIGN "Next phase" and A-15, plus: no auth or rate limiting, PLATE_PHONE_MISMATCH reveals a known plate, the frontend date strip is computed at pick time, E2E and integration share the test database.
+- Out: do not edit DESIGN.md, the ADRs, code, tests or README. No content that cannot be traced to a file in the repo.
+
+**References**: `docs/BRIEF.md`, `docs/DESIGN.md`, `docs/adr/0001-tech-stack.md`, `docs/adr/0002-frontend-stack.md`, `prisma/schema.prisma`, `prisma/migrations/*`, `src/modules/scheduling/**`, `frontend/next.config.ts`, `package.json` scripts, CLAUDE.md §9 (Mermaid only, relative links, no hard wrap, LF).
+
+**Done when**:
+- Every number (test counts, ports, timeouts, seed counts, versions) is checked against the repo, not copied from memory; test counts come from a fresh `pnpm verify` and `pnpm test:integration` run.
+- Each section links to its source (DESIGN section, ADR, or file) with relative links, and every link resolves.
+- The 3 Mermaid diagrams are valid syntax.
+- The reviewer subagent checks the whole file against the sources for factual accuracy and spec drift; show its table and verdict verbatim.
+- WORK_LOG and PROMPT_LOG updated; show `git status` and propose one commit message (`docs:`). Do not stage or commit.
+
+**Stop & ask if**: a source contradicts another source or the code; a fact needed for a section is not written anywhere in the repo; the file would exceed 4 printed pages.
+
+### 2026-10-18 19:17 — Phase 5 — Record Observability decisions
+
+/spec-record Observability (new section after API Contract), API Contract -- Add section "Observability [Resolved]" with: O-1 Structured logs: the API writes JSON log lines with the NestJS ConsoleLogger json option; no new packages. O-2 Request ID: an incoming X-Request-Id is reused when it matches ^[A-Za-z0-9._-]{1,64}$, otherwise a new UUID v4 is generated; every response, including errors, returns it in the X-Request-Id header. O-3 Access log: one entry per completed request with requestId, method, path without query string, statusCode, durationMs, and code when the error body has one; level log below 500, error at 500 and above; request and response bodies, phone, licensePlate and name are never logged. O-4 Health: GET /health returns 200 {"status":"ok"} when a database ping succeeds, otherwise 503 with code DATABASE_UNAVAILABLE in the standard error body; the ping error is logged, not returned. O-5 Metrics and tracing are next phase (strategy in docs/SYSTEM_DESIGN.md). In API Contract, add GET /health and the 503 DATABASE_UNAVAILABLE row.

@@ -258,3 +258,18 @@ Cases:
 - T6.9 [demo: no free technician] Go Vap, EV battery check, 2 bookings with different plates at the same valid start → the first returns 201, the 2nd returns 409 `TECHNICIAN_UNAVAILABLE` while bays are still free.
 - T6.10 [demo: overnight] Tan Binh, Full inspection starting 09:00 local on a future day: without consent → 400 `OVERNIGHT_CONSENT_REQUIRED`; with `overnightConsent: true` → 201 with `endTime` on the next local day.
 - T6.11 Names are zero-padded and unique within each dealership: bays `Bay 01`…`Bay NN`, technicians `Tech 01`…`Tech NN`, with NN equal to that dealership's count.
+
+## Round 3d — Schema: zero-length interval guards (DESIGN.md A-16)
+
+File: `tests/integration/scheduling/schema-constraints.integration.spec.ts` — run with `pnpm test:integration`.
+
+Allowed: `prisma/schema.prisma` (comment only, if needed), `prisma/migrations/**` (one new migration), `tests/integration/support/**`, `docs/adr/0001-tech-stack.md` (erratum only).
+
+Why: a `[)` range with `endTime = startTime` is empty and overlaps nothing, so a zero-duration service type would bypass the overlap query and all three exclusion constraints (I-3).
+
+- T3.20a [A-16] Raw SQL: inserting a ServiceType with `durationMinutes = 0` is rejected with SQLSTATE 23514 and constraint `service_type_duration_positive`.
+- T3.20b [A-16] Raw SQL: inserting a ServiceType with `durationMinutes = -30` is rejected with SQLSTATE 23514 and constraint `service_type_duration_positive`.
+- T3.21a [A-16] Raw SQL: inserting a Confirmed Appointment with `endTime = startTime` is rejected with SQLSTATE 23514 and constraint `appointment_end_after_start`.
+- T3.21b [A-16] Raw SQL: inserting a Confirmed Appointment with `endTime < startTime` is rejected with SQLSTATE 23514 and constraint `appointment_end_after_start`.
+- T3.21c-1 [A-16] Raw SQL: inserting a ServiceType with `durationMinutes = 1` is accepted (no false rejection).
+- T3.21c-2 [A-16] Raw SQL: inserting a Confirmed Appointment one minute long is accepted (no false rejection).
