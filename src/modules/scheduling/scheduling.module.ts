@@ -41,6 +41,8 @@ const systemClock: Clock = { now: () => new Date() };
       inject: [BOOKING_UNIT_OF_WORK, CLOCK],
     },
   ],
+  // The health check (DESIGN.md O-4) pings the database through the same client.
+  exports: [PRISMA_CLIENT],
 })
 export class SchedulingModule implements OnModuleDestroy {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}

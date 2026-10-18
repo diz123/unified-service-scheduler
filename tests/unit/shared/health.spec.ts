@@ -54,4 +54,39 @@ describe('HealthCheck (O-4)', () => {
 
     expect(loggedErrors).toHaveBeenCalledWith(expect.stringContaining(PING_ERROR));
   });
+
+  describe('with fake timers', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('T8.8d a ping that does not settle within 2 seconds raises DATABASE_UNAVAILABLE', async () => {
+      const health = new HealthCheck(() => new Promise<never>(() => undefined));
+      let outcome: unknown = 'pending';
+      void health.check().then(
+        () => {
+          outcome = 'resolved';
+        },
+        (error: unknown) => {
+          outcome = error;
+        },
+      );
+
+      await jest.advanceTimersByTimeAsync(1_999);
+      const beforeTimeout = outcome;
+      await jest.advanceTimersByTimeAsync(1);
+
+      const error = outcome instanceof HttpException ? outcome : undefined;
+      const body = error?.getResponse() as { code?: unknown } | undefined;
+      expect([beforeTimeout, error?.getStatus(), body?.code]).toStrictEqual([
+        'pending',
+        503,
+        'DATABASE_UNAVAILABLE',
+      ]);
+    });
+  });
 });

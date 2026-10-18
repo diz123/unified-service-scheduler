@@ -608,3 +608,40 @@ Stop & ask if: any item needs a behavior change beyond its description, or a fil
 ### 2026-10-18 19:20 — Phase 5 — TDD Round 8a observability units
 
 /tdd-round Round 8a -- docs/drafts/observability-test-cases.md
+
+### 2026-10-18 20:02 — Phase 5 — TDD Round 8b observability HTTP
+
+/tdd-round Round 8b -- docs/drafts/observability-test-cases.md
+
+### 2026-10-18 20:25 — Phase 5 — Record O-3 and O-4 amendments
+
+/spec-record Observability -- Amend O-4: the database ping times out after 2 seconds; a timeout is treated as a failed ping (503 DATABASE_UNAVAILABLE). Amend O-3: known limitation — a request whose client disconnects before the response finishes ('close' without 'finish') writes no access-log entry; the booking itself is still recorded in the database.
+
+### 2026-10-18 21:03 — Phase 5 — Extend SYSTEM_DESIGN.md to cover BRIEF Part 1
+
+**Phase**: 5 — Documentation (submission)
+**Task**: Update `docs/SYSTEM_DESIGN.md` so it covers every item of "Part 1: System Design" and "Build For the Future" in `docs/BRIEF.md` (Challenge Structure section).
+
+**Scope**:
+- In: edit `docs/SYSTEM_DESIGN.md` only. Keep the existing sections; add or extend:
+  1. Components — a table: component | role | location (Browser UI, Next.js frontend + rewrite, NestJS presentation/application/domain/infrastructure, request-observability middleware, exception filters, health endpoint, PostgreSQL, seed script).
+  2. Data flow — keep the booking sequence diagram; add short text flows for lookup, the read-only endpoints and GET /health; mention X-Request-Id travelling through each response.
+  3. Technologies — a table: technology + version | role | why chosen (from ADR-0001 and ADR-0002; no new reasoning).
+  4. Observability — split clearly into "Implemented" (O-1 to O-4 with what each guarantees, including no personal data in logs) and "Strategy, next phase" (metrics, tracing, alerting: label every item as proposed, not built).
+  5. Build for the future — one short paragraph each for scalability, performance, reliability, maintainability, observability: what the current design already does, and the next step.
+  6. GenAI in the design phase — a dedicated section: how the spec, the stack ADRs and the test-case lists were produced with AI under the harness (CLAUDE.md, /spec-review, /spec-record, /adr, the reviewer and red-gate subagents, the git-write hook). Every example must come from docs/PROMPT_LOG.md or docs/WORK_LOG.md with its date; no invented examples.
+  7. API — add GET /health and the 503 DATABASE_UNAVAILABLE row; mention the X-Request-Id header.
+  8. Testing — refresh counts from fresh runs; add the observability tests.
+  9. Known limitations — add: the health ping query keeps running after its 2 s timeout; a client disconnect before the response finishes writes no access-log line; integration output prints ERROR AccessLog lines from tests that trigger 500/503 on purpose.
+- Out: no code, DESIGN.md, ADR or README changes. No content that cannot be traced to a file in the repo.
+
+**References**: `docs/BRIEF.md`, `docs/DESIGN.md` (incl. Observability O-1 to O-5, A-16), both ADRs, `docs/PROMPT_LOG.md`, `docs/WORK_LOG.md`, `CLAUDE.md`, `.claude/skills/**`, `.claude/agents/**`, `src/**`, `package.json`, CLAUDE.md §9.
+
+**Done when**:
+- Every Part 1 bullet in BRIEF maps to a section; list the mapping in your report.
+- Numbers come from fresh `pnpm verify` and `pnpm test:integration` runs; all links resolve; Mermaid stays valid.
+- Under about 6 printed pages.
+- The reviewer subagent checks the whole file against the sources (accuracy, invented examples, BRIEF coverage); show its table and verdict verbatim.
+- New WORK_LOG row; one commit proposal (`docs:`), no Co-Authored-By. Do not stage or commit.
+
+**Stop & ask if**: a GenAI example cannot be found in the logs; sources conflict; the file would exceed about 6 pages.

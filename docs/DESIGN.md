@@ -287,9 +287,11 @@ An incoming `X-Request-Id` is reused when it matches `^[A-Za-z0-9._-]{1,64}$`; o
 
 One entry per completed request with `requestId`, `method`, path without query string, `statusCode`, `durationMs`, and `code` when the error body has one. Level `log` below 500, `error` at 500 and above. Request and response bodies, `phone`, `licensePlate` and `name` are never logged.
 
+Known limitation: a request whose client disconnects before the response finishes (`close` without `finish`) writes no access-log entry; the booking itself is still recorded in the database.
+
 ### O-4 — Health
 
-`GET /health` returns 200 `{"status":"ok"}` when a database ping succeeds, otherwise 503 with code `DATABASE_UNAVAILABLE` in the standard error body. The ping error is logged, not returned.
+`GET /health` returns 200 `{"status":"ok"}` when a database ping succeeds, otherwise 503 with code `DATABASE_UNAVAILABLE` in the standard error body. The ping error is logged, not returned. The database ping times out after 2 seconds; a timeout is treated as a failed ping (503 `DATABASE_UNAVAILABLE`).
 
 ### O-5 — Metrics and tracing
 
