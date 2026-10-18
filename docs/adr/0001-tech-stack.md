@@ -8,6 +8,8 @@
 
 **Erratum** (local setup): `docker compose up` starts only PostgreSQL. Migrations (`pnpm prisma migrate deploy`), the seed (`pnpm db:seed`) and the API (`pnpm dev`, or `pnpm build` then `pnpm start`) run on the host against the Dockerized database, so reviewer setup requires Docker plus Node 24 and pnpm 11. This corrects Consequences: "`docker compose up --build` brings up the full stack (DB + migrations + seed + API); reviewer setup requires only Docker."
 
+**Erratum** (2026-10-18): raw SQL now lives in two migrations, not one. `20261018100236_appointment_dealership_range_index` adds a partial GiST index on (`"dealershipId"`, `tstzrange("startTime", "endTime", '[)')`) for Confirmed appointments so the booking overlap query can use an index; it is index-only, and Prisma does not represent it (like the exclusion constraints). This corrects Consequences, trade-off 2: "raw SQL in exactly one place".
+
 **Note** (2026-10-17): NestJS 12 ships as ESM only. The project stays CommonJS (`tsconfig` `module: CommonJS`). Jest runs with `node --experimental-vm-modules` (package.json `test`, `test:integration`) so it can load ESM packages. The compiled app relies on Node 24's built-in `require(esm)`, confirmed by booting `node dist/main`. `dotenv` is also loaded at app runtime via `import 'dotenv/config'` in `src/main.ts`.
 
 ---

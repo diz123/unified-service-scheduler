@@ -127,3 +127,15 @@ DESIGN.md Target Deliverables includes a booking frontend: one page to book an a
 
 - The terminals and commands to start PostgreSQL, the API (port 3000) and the frontend (port 3001).
 - Next.js collects anonymous telemetry by default; set `NEXT_TELEMETRY_DISABLED=1` to opt out.
+
+---
+
+## Amendment 1 — E2E smoke tests (2026-10-18)
+
+**Trigger fired**: Consequences, trade-off 2 — both flows (booking and lookup) work, so the Playwright smoke test is added as a separate script outside `pnpm verify`.
+
+**Pinned version**: `@playwright/test` 1.64.1 (npm `latest` on 2026-10-18), root devDependency, exact pin; Chromium only (Chrome for Testing 156.0.8078.4, Playwright chromium v1248).
+
+**What it covers** (`e2e/booking.spec.ts`, run serially): booking with local start/end and status Confirmed; overnight consent with the form kept, then a next-day end; lookup with the right phone and with a wrong phone; a vehicle-overlap rejection with the form kept. `e2e/validation.spec.ts`: with focus in an empty field, "Book appointment" still shows every required-field message.
+
+**How it runs**: `pnpm test:e2e`. Playwright builds and starts the API on port 3000 and the frontend on port 3001 with `DATABASE_URL` set from `DATABASE_URL_TEST`; busy ports fail the run (`reuseExistingServer: false`). The API server command applies migrations first (`pnpm prisma migrate deploy`), because web servers start before global setup. Global setup refuses to run unless the test database name ends in `_test` and differs from `DATABASE_URL`, then deletes appointments, vehicles and customers, and re-seeds. Prerequisites: Docker PostgreSQL running, dev servers stopped, and `pnpm exec playwright install chromium` once per machine. E2E and integration tests share `scheduler_test`; run them one at a time.

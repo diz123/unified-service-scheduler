@@ -76,6 +76,7 @@ The ADR MUST state explicitly which criteria were traded off against each other.
 - Typecheck: `pnpm typecheck`
 - Lint: `pnpm lint`
 - Full check (backend + frontend): `pnpm verify`
+- E2E smoke tests: `pnpm test:e2e` (not part of verify; needs ports 3000/3001 free)
 - Frontend dev server (port 3001, API on 3000): `pnpm --filter frontend dev`
 - Frontend tests / typecheck / lint / build: `pnpm --filter frontend test` · `pnpm --filter frontend typecheck` · `pnpm --filter frontend lint` · `pnpm --filter frontend build`
 

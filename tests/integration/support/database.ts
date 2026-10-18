@@ -6,7 +6,7 @@ const TEST_POOL_SIZE = 20;
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 
 /** host:port/database, with loopback aliases and the default port normalized, so spelling differences can't hide a match. */
-const databaseKey = (url: string): string => {
+export const databaseKey = (url: string): string => {
   const { hostname, port, pathname } = new URL(url);
   const host = LOOPBACK.has(hostname.toLowerCase()) ? 'localhost' : hostname.toLowerCase();
   return `${host}:${port || '5432'}${pathname}`;

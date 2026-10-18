@@ -45,3 +45,10 @@ Thumbs.db
 
 # Browser tool output (Claude Code smoke tests)
 .playwright-mcp/
+
+# Playwright E2E output
+test-results/
+playwright-report/
+
+# Claude Design exports (reference only; large, generated)
+docs/design/
