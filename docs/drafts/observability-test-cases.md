@@ -48,4 +48,4 @@ File: `tests/integration/observability/observability.http.spec.ts` — run with 
 
 Allowed: `src/app.setup.ts`, `tests/integration/observability/**`.
 
-- T8.19 [O-2] Every response omits the `X-Powered-By` header (checked on `GET /health` and on a 404).
+- T8.19 [no spec rule; security hygiene] Every response omits the `X-Powered-By` header (checked on `GET /health` and on a 404).

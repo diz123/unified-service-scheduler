@@ -694,3 +694,12 @@ Stop & ask if: any item needs a behavior change beyond its description, or a fil
 - New WORK_LOG row; one commit proposal, no Co-Authored-By. Do not stage or commit.
 
 **Stop & ask if**: the mutation check does not fail with the old serializer; disabling the header needs a new package or a change to `main.ts` beyond sharing the setup; any test level fails.
+
+### 2026-10-18 23:20 — Phase 5 — Final follow-ups: renderArgs depth, T8.19 tag, PDF wording, hash map
+
+Final follow-ups (Phase 5). Before the first push I rewrote history: the MutationCheck line is gone from the README commit.
+1. Reviewer Minor 1 (23:06): in renderArgs, keep strings as they are and render every other value with inspect(arg, { depth: null, maxArrayLength: null, maxStringLength: null }) from node:util. Mutation-check twice with a temporary booking-path log, once new Error(<phone>) and once { a: { b: { c: { phone: <phone> } } } }: T8.13a must fail for both. Remove the mutation, confirm nothing in src contains MutationCheck, and run pnpm test:integration.
+2. Reviewer Minor 3: retag T8.19 in docs/drafts/observability-test-cases.md as "[no spec rule; security hygiene]". In docs/SYSTEM_DESIGN.md set lines 202 and 234 back to T8.1–T8.18, and after the line 202 list add: "T8.19 checks that responses omit `X-Powered-By`."
+3. README.md line 112: replace "(generated from the Markdown at commit b2c6b81)" with "(the Markdown file is the source of truth)".
+4. Build the hash map with `paste <(git log --format=%h refs/original/refs/heads/main) <(git log --format=%h main)` (read-only). Append ONE WORK_LOG row recording the rewrite and old → new hashes for d826a7e, e838e3d, 494ee34, b2c6b81, 8dbede4 and 5769e37, so rows that cite old hashes can be traced. Do not edit past rows.
+Run the reviewer on the diff and show the verdict verbatim. One commit proposal, no Co-Authored-By. Do not stage or commit.

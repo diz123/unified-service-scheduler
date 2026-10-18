@@ -109,7 +109,7 @@ docs/                     spec, system design, ADRs, test-case lists, prompt and
 
 ## Documentation
 
-- [System design](docs/SYSTEM_DESIGN.md) — architecture, components, data flow, technologies, observability, GenAI use. [PDF](docs/SYSTEM_DESIGN.pdf): PDF export with the diagrams rendered (generated from the Markdown at commit b2c6b81).
+- [System design](docs/SYSTEM_DESIGN.md) — architecture, components, data flow, technologies, observability, GenAI use. [PDF](docs/SYSTEM_DESIGN.pdf): PDF export with the diagrams rendered (the Markdown file is the source of truth).
 - [Spec (DESIGN.md)](docs/DESIGN.md) — domain model, invariants, API contract, assumptions.
 - [ADR-0001 backend stack](docs/adr/0001-tech-stack.md) and [ADR-0002 frontend stack](docs/adr/0002-frontend-stack.md).
 - Test-case lists: [booking API](docs/drafts/book-appointment-test-cases.md), [frontend](docs/drafts/frontend-test-cases.md), [observability](docs/drafts/observability-test-cases.md).

@@ -1,6 +1,6 @@
 import { INestApplication, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { format } from 'node:util';
+import { inspect } from 'node:util';
 import request from 'supertest';
 import { AppModule } from '../../../src/app.module';
 import { configureApp } from '../../../src/app.setup';
@@ -105,8 +105,13 @@ const accessEntries = (): AccessEntry[] =>
 const entryFor = (requestId: unknown): AccessEntry | undefined =>
   accessEntries().find(({ entry }) => entry['requestId'] === requestId);
 
-/** Each argument as Node prints it; unlike JSON.stringify, an Error keeps its message and stack. */
-const renderArgs = (args: unknown[]): string => args.map((arg) => format(arg)).join(' ');
+/** Strings as they are; any other value fully inspected, so an Error keeps its message and stack and no nesting is cut off. */
+const renderArgs = (args: unknown[]): string =>
+  args
+    .map((arg) =>
+      typeof arg === 'string' ? arg : inspect(arg, { depth: null, maxArrayLength: null, maxStringLength: null }),
+    )
+    .join(' ');
 
 /** Personal data found in the Logger calls or in `output` (stdout and stderr writes, console calls). */
 const personalDataLogged = (output: string): string[] => {
@@ -352,7 +357,7 @@ describe('GET /health (O-4, T8.15, T8.18)', () => {
   });
 });
 
-describe('No X-Powered-By header (O-2, T8.19)', () => {
+describe('No X-Powered-By header (security hygiene, T8.19)', () => {
   it('T8.19a GET /health omits the X-Powered-By header', async () => {
     const response = await request(server()).get('/health');
 
