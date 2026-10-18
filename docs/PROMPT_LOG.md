@@ -604,3 +604,7 @@ Stop & ask if: any item needs a behavior change beyond its description, or a fil
 ### 2026-10-18 19:17 — Phase 5 — Record Observability decisions
 
 /spec-record Observability (new section after API Contract), API Contract -- Add section "Observability [Resolved]" with: O-1 Structured logs: the API writes JSON log lines with the NestJS ConsoleLogger json option; no new packages. O-2 Request ID: an incoming X-Request-Id is reused when it matches ^[A-Za-z0-9._-]{1,64}$, otherwise a new UUID v4 is generated; every response, including errors, returns it in the X-Request-Id header. O-3 Access log: one entry per completed request with requestId, method, path without query string, statusCode, durationMs, and code when the error body has one; level log below 500, error at 500 and above; request and response bodies, phone, licensePlate and name are never logged. O-4 Health: GET /health returns 200 {"status":"ok"} when a database ping succeeds, otherwise 503 with code DATABASE_UNAVAILABLE in the standard error body; the ping error is logged, not returned. O-5 Metrics and tracing are next phase (strategy in docs/SYSTEM_DESIGN.md). In API Contract, add GET /health and the 503 DATABASE_UNAVAILABLE row.
+
+### 2026-10-18 19:20 — Phase 5 — TDD Round 8a observability units
+
+/tdd-round Round 8a -- docs/drafts/observability-test-cases.md

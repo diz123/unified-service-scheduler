@@ -101,6 +101,7 @@ The ADR MUST state explicitly which criteria were traded off against each other.
   | `ResourceNotFoundException` (dealership, service type)            | 404 Not Found            |
   | `TransactionTimeoutException` (Prisma P2028, lock wait exhausted) | 503 Service Unavailable |
   | `AppointmentsNotFoundException` (Look Up Appointments)            | 404 Not Found            |
+  | `DatabaseUnavailableException` (health check, DESIGN O-4)        | 503 Service Unavailable |
 
 - **YAGNI & Simplicity**: Keep the design focused on the core service layer. No distributed-systems complexity unless strictly required.
 
@@ -126,7 +127,7 @@ The ADR MUST state explicitly which criteria were traded off against each other.
    - At least one **concurrency integration test** against a real database: N parallel requests for the same slot → exactly one succeeds.
    - NEVER modify or delete an existing test to make it pass without human approval.
 5. **Commit Proposals** (AI proposes, human commits):
-   - At the end of each task, show `git status` and propose ONE commit message in Conventional Commits format (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`).
+   - At the end of each task, show `git status` and propose ONE commit message in Conventional Commits format (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`). Never add a `Co-Authored-By` trailer; AI involvement is recorded in `docs/PROMPT_LOG.md` and `docs/WORK_LOG.md`.
    - If a task spans multiple logical changes, propose how to split them into atomic commits (which files per commit).
    - Do not execute the commit.
 6. **Work Log** (`docs/WORK_LOG.md`) — applies from Phase 1 onward:
