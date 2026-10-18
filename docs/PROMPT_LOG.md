@@ -645,3 +645,52 @@ Stop & ask if: any item needs a behavior change beyond its description, or a fil
 - New WORK_LOG row; one commit proposal (`docs:`), no Co-Authored-By. Do not stage or commit.
 
 **Stop & ask if**: a GenAI example cannot be found in the logs; sources conflict; the file would exceed about 6 pages.
+
+### 2026-10-18 21:54 — Phase 5 — Write README.md
+
+**Phase**: 5 — Documentation (submission)
+**Task**: Write `README.md` (currently only a title). It must satisfy BRIEF "Deliverables & Submission" item 2: clear build, run and test instructions, and a dedicated "AI Collaboration Narrative" section.
+
+**Scope**:
+- In: `README.md` only, English, about 2 screens plus the narrative. Sections in order:
+  1. Title and 2–3 sentence summary (Scenario A; backend is the implemented service layer; the Next.js frontend is the client harness, built after the backend passed `pnpm verify`).
+  2. Highlights (4–5 bullets): two-layer double-booking protection with concurrency tests on real PostgreSQL; working-hours endTime with overnight consent; automatic bay and technician allocation; observability (JSON logs, X-Request-Id, /health); test counts per level.
+  3. Prerequisites: Docker, Node 24, pnpm 11; ports 3000, 3001 and the DB port from docker-compose.yml.
+  4. Quick start: exact commands from a clean clone: install, copy `.env.example` to `.env`, start PostgreSQL, migrate, seed, run API and frontend. Only PostgreSQL runs in Docker (ADR-0001 erratum).
+  5. Try it: cURL examples for each endpoint (book, lookup, dealerships, service types, health, X-Request-Id), using real ids from `SEED_IDS`, plus 4–5 demo scenarios from the seed (success, overnight, no bay, no technician, wrong phone).
+  6. Tests: one command per level with counts; integration and E2E share `scheduler_test`, run them one at a time; expected `ERROR [AccessLog]` / `ERROR [AllExceptionsFilter]` lines come from tests that trigger 500/503 on purpose.
+  7. Project structure: short tree, one line each.
+  8. Documentation: links to docs/SYSTEM_DESIGN.md, DESIGN.md, both ADRs, the test-case lists, BRIEF.md.
+  9. AI Collaboration Narrative: three subsections matching the brief — (a) strategy for guiding the AI, (b) process for verifying and refining its output, (c) how final quality was ensured. Use 3–4 concrete dated examples from PROMPT_LOG/WORK_LOG, consistent with SYSTEM_DESIGN section 14; state that the engineer made every decision and every commit, that commits carry no AI co-author trailer because the logs record the AI's role, and that test-case lists from Round 3b on were drafted in an external Claude chat.
+  10. Known limitations: link to SYSTEM_DESIGN section 15 plus a one-line summary.
+- Out: no code, no other docs. Do not reference any document that is not in the repo.
+
+**References**: `docs/BRIEF.md`, `docs/SYSTEM_DESIGN.md`, `docs/DESIGN.md`, both ADRs, `package.json`, `frontend/package.json`, `docker-compose.yml`, `.env.example`, `prisma/seed.ts` (SEED_IDS), `docs/PROMPT_LOG.md`, `docs/WORK_LOG.md`, CLAUDE.md §9.
+
+**Done when**:
+- Clean-clone check: `git clone` the repo into a temp folder, follow the Quick start exactly as written, and confirm `pnpm verify` passes and both servers start and `GET /health` returns 200 (stop dev servers on the same ports first; ask me if ports are busy). Fix the README, not the environment, if a step fails. Report each command and its result.
+- Every cURL example was run against the running API and returned the documented status.
+- All links resolve; counts come from fresh runs.
+- The reviewer subagent checks the whole README against the repo and logs (accuracy, invented examples, BRIEF item 2 coverage); show its table and verdict verbatim.
+- New WORK_LOG row; one `docs:` commit proposal, no Co-Authored-By. Do not stage or commit.
+
+**Stop & ask if**: a Quick start step needs a code or config change; `.env.example` lacks a variable the app needs; a narrative example cannot be found in the logs.
+
+### 2026-10-18 22:40 — Phase 5 — Final review: T8.13 serializer, X-Powered-By, phase header
+
+**Phase**: 5 — Final review before submission
+**Task**: Close the three items deferred to the final review, then run every test level.
+
+**Scope**:
+1. T8.13 gap (test-only). `personalDataLogged` and `capturingOutput` in tests/integration/observability/observability.http.spec.ts serialize log arguments with `JSON.stringify`, which turns an `Error` into `{}`, so a phone inside an Error message would not be caught. Serialize each argument with `util.format` (node:util) instead. Mutation-check it: temporarily make the booking path log `new Error(<the request's phone>)`, confirm T8.13a fails, revert, confirm it passes. Report both runs. Update the T8.13 wording in docs/drafts/observability-test-cases.md (rev 4) to say Error objects are covered.
+2. Disable `X-Powered-By`. Add T8.19 [O-2] to the list: "Every response omits the `X-Powered-By` header (checked on `GET /health` and on a 404)." Run it with `/tdd-round` as Round 8c (red gate, then the smallest change in `src/app.setup.ts` so tests and `main.ts` share it). Then update the integration count everywhere it is stated (README.md, docs/SYSTEM_DESIGN.md) from fresh output.
+3. Phase header. Add to CLAUDE.md §4.1: "5. **Document & submit** — SYSTEM_DESIGN.md, README.md, final review." and set the header of docs/DESIGN.md to "Current Phase: 5 — Document & submit". No other DESIGN.md change.
+- Out: anything else. List further findings; do not fix them.
+
+**Done when**:
+- `pnpm verify`, `pnpm test:integration`, then `pnpm test:e2e` (one at a time; the main PostgreSQL container is running) all exit 0. Report the counts per level from the output.
+- The reviewer subagent checks the diff; show its table and verdict verbatim.
+- Tell me whether docs/SYSTEM_DESIGN.md changed, and which lines (I regenerate the PDF from it).
+- New WORK_LOG row; one commit proposal, no Co-Authored-By. Do not stage or commit.
+
+**Stop & ask if**: the mutation check does not fail with the old serializer; disabling the header needs a new package or a change to `main.ts` beyond sharing the setup; any test level fails.
