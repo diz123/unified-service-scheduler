@@ -419,3 +419,76 @@ Stop & ask if: a behavior is not in DESIGN or this prompt; a file outside the al
 1 (b): move withTimezones to frontend/lib/lookup-rows.ts and todayIn to frontend/lib/local-time.ts (or a new lib file), with specs: withTimezones — each row gets its own dealership's timezone (two dealerships, different zones), and one unknown dealership id gives an empty list; todayIn — fixed clock, including 23:30Z → next local date in Asia/Ho_Chi_Minh. Allowed files for this fix: those lib files, their specs under frontend/tests/unit/, and the two .tsx files that import them.
 2 yes: /spec-record under "Lookup times in the frontend" — "If any dealership's timezone is unknown (e.g. List Dealerships failed), the frontend shows no lookup rows; the page shows the error message instead." Tag [Resolved].
 Then verify and re-review.
+
+### 2026-10-18 07:36 — Phase 4 — UI/UX review (ui-ux-pro-max)
+
+/ui-ux-pro-max
+
+### 2026-10-18 07:47 — Phase 4 — Round F5 frontend polish and input UX
+
+Phase: 4 — Implement (frontend polish + input UX)
+Task: Round F5 — restyle the single page so it looks like a professional booking product, and improve form inputs.
+
+Scope:
+- If the frontend-design skill is available, read it first and follow its guidance.
+- Allowed files: frontend/app/globals.css, frontend/app/page.tsx, frontend/app/booking-form.tsx, frontend/app/lookup-form.tsx, frontend/lib/time-slots.ts (new), frontend/tests/unit/time-slots.spec.ts (new).
+- Plain CSS only (ADR-0002). No new packages, no Tailwind, no UI library, no web-font download that needs a new package.
+- Do not change behavior beyond the items listed below: same API calls, messages, payloads and existing lib/ helpers. If anything else needs logic, stop and ask.
+
+Visual:
+- Keep the current direction (serif headings, warm neutral background, rust accent) and refine it.
+- Desktop: two columns — booking form as the main column, lookup as a side card. Mobile (< 768px): stacked, booking first.
+- Field rows: Name | Phone; License plate | Make | Model; Dealership | Service type; Date | Time. "(optional)" inline next to the label, muted.
+- Replace classic fieldset legends with section headings inside cards.
+- Show the selected dealership's opening hours and the selected service's duration as helper text under the selects (data already loaded).
+- Clear states: focus ring, disabled button while submitting, error alert, success card, status badge in lookup results.
+- Accessible: labels stay linked to inputs, contrast at least WCAG AA, visible keyboard focus.
+
+Input UX:
+- Placeholders as examples: Name "Nguyen Van A", Phone "0901 234 567", License plate "51A-123.45", Make "Toyota", Model "Vios"; lookup fields the same.
+- Required fields show "*" in the label; keep the existing required/maxLength/min attributes.
+- Field-level messages under each input, shown on blur or submit, from the browser's constraint validation (required, too long, date before min). No new format rules for phone or plate (DESIGN defines none).
+- Date: keep the native date picker, styled.
+- Time: replace the free time input with a select of 30-minute slots from the selected dealership's openTime up to (not including) closeTime; disabled until a dealership is chosen; reset when the dealership changes.
+- Build the slot list in a pure helper frontend/lib/time-slots.ts with unit tests in frontend/tests/unit/time-slots.spec.ts: 08:00–17:00 → 08:00…16:30; 07:30–19:00 starts 07:30 and ends 18:30; 07:00–12:00 → 10 slots; close not on a 30-minute boundary, e.g. 17:15 → last slot 17:00.
+
+Done when: pnpm verify passes; before/after screenshots at 1280px and 390px wide for the empty form, a field-level error, an API error, the overnight checkbox, a success and a lookup result; the reviewer subagent confirms the .tsx diffs change only markup, classNames and the listed input UX, and that time-slots has tests (table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; one commit proposal. Never stage or commit.
+
+Stop & ask if: a behavior change outside this list seems needed; a file outside the allowed list is needed; a package is needed.
+
+### 2026-10-18 08:36 — Phase 4 — Import Claude Design project "Scheduler v2 States"
+
+Use the claude_design MCP (https://api.anthropic.com/v1/design/mcp, auth via /design-login) to import this project:
+https://claude.ai/design/p/6e1e180d-6c2c-4149-8044-01113d94a220?file=Scheduler+v2+States.dc.html
+
+Focus on these files (the whole project is readable):
+- `Scheduler v2 States.dc.html`
+
+Also read these files the selection imports:
+- `support.js`
+
+Implement: `Scheduler v2 States.dc.html`
+
+### 2026-10-18 08:46 — Phase 4 — Implement "Unified Service Scheduler v2" design
+
+"C:\Users\admin\Downloads\Unified Service Scheduler v2.html"Design reference: open html file in docs/design/ in your browser tool (it is a self-contained export from Claude Design). Take screenshots of each state frame at desktop and mobile, read its design tokens, and match them. Where the design and this prompt disagree, this prompt wins (plain CSS only, no new packages, no behavior change beyond the listed input UX).
+
+### 2026-10-18 09:12 — Phase 4 — Round F6 hero header, logo, focus styles, date/time pickers
+
+Phase: 4 — Implement (frontend polish follow-ups)
+Task: Round F6 — hero header, logo, focus styles, date/time pickers.
+
+Scope:
+- Allowed files: frontend/app/globals.css, frontend/app/layout.tsx, frontend/app/page.tsx, frontend/app/booking-form.tsx, frontend/app/lookup-form.tsx, frontend/app/logo.tsx (new), frontend/app/icon.svg (new), frontend/lib/date-strip.ts (new), frontend/tests/unit/date-strip.spec.ts (new).
+- Plain CSS only, no new packages (ADR-0002). Same API calls, payloads, messages and existing lib helpers. The form still produces the same date (YYYY-MM-DD) and time (HH:mm) values.
+
+1. Header: remove the white top bar. Put the logo and app name "Unified Service Scheduler" inside the hero, top-left, on the image overlay with AA contrast.
+2. Logo: a simple original inline SVG mark (e.g. wrench + clock) in logo.tsx, monochrome, using the primary token; not resembling any real brand. Reuse it as frontend/app/icon.svg (favicon).
+3. Focus and error styles: no thick outline. Focus = 1px border in primary + soft 3px ring (primary at ~25% opacity) via box-shadow, only on :focus-visible. Error = 1px danger border; error + focus = danger border + soft danger ring. Never two stacked borders. Focus must stay visible (WCAG 2.4.7).
+4. Date picker: a horizontal strip of chips for the next 14 days in the selected dealership's timezone, starting today; each chip shows weekday + day/month (e.g. "Mon · 20/10"); selected chip uses primary. A "Other date" button reveals the native date input (keeps min) for later dates. Disabled until a dealership is chosen. Build the 14-day list in frontend/lib/date-strip.ts (pure, takes a clock and timezone) with unit tests: starts on today's local date; 23:30Z gives the next day in Asia/Ho_Chi_Minh; crosses month and year ends; returns 14 consecutive dates.
+5. Time picker: replace the time select with a grid of chips from the existing time-slots helper; selected chip uses primary; disabled until a dealership is chosen; reset when the dealership changes.
+6. Chips are radio inputs in a fieldset with a visually hidden legend: arrow-key navigation, visible focus, screen-reader labels (full date, e.g. "Monday 20 October 2026").
+
+Done when: pnpm verify passes; screenshots at 1280px and 390px of the hero, a focused field, a focused field with an error, the date strip and the time grid; keyboard check (Tab into the strip, arrows move, Space/Enter selects); the reviewer subagent reviews the diff (table and verdict verbatim); WORK_LOG and PROMPT_LOG updated; one commit proposal. Never stage or commit.
+
+Stop & ask if: a behavior change outside this list seems needed; a file outside the allowed list is needed; a package is needed.
